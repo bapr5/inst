@@ -1,13 +1,108 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-    <script language=Javascript></script>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <head>
+    <script language="Javascript">
+      function getK(n) {
+        console.log(n)
+        if (n <= 5) {
+          return 1.791;
+        } else if (5 < n < 10) {
+          return 2.146;
+        } else if (15 < n < 20) {
+          return 2.447;
+        } else if (20 < n < 25) {
+          return 2.537;
+        } else if (25 < n) {
+          return 2.633;
+        } else {
+          return 2.146;
+        }
+      }
+      function Calc() {
+        let k = 2.146;
+        koef.value = k;
+        let n = ChisloYchastkov.value;
+        k = getK(n)
+        console.log(k)
+        SumPloshad.value = 0;
+        SredPloshad.value = 0;
+        Otklonenie.value = 0;
+        for (let i = 1; i <= n; i++) {
+          if (i <= n) {
+            element1 = "ploshad" + i;
+            SumPloshad.value =
+              +SumPloshad.value + +document.getElementById(element1).value;
+          }
+        }
+        SredPloshad.value = SumPloshad.value / n;
+        for (let i = 1; i <= n; i++) {
+          if (i <= n) {
+            element1 = "ploshad" + i;
+            Otklonenie.value =
+              +Otklonenie.value +
+              Math.pow(
+                document.getElementById(element1).value - SredPloshad.value,
+                2
+              );
+          }
+        }
+        Otklonenie.value = Math.sqrt(Otklonenie.value / n);
+        for (let i = 1; i <= n; i++) {
+          element1 = "ploshad" + i;
+          if (
+            (document.getElementById(element1).value - SredPloshad.value) /
+              Otklonenie.value >=
+            k
+          ) {
+            document.getElementById(element1).style.background = "red";
+          }
+        }
+      }
+
+      function TableYchastki() {
+        let n = ChisloYchastkov.value;
+        div1.style.display = "block";
+        for (let i = 1; i <= n; i++) {
+          if (i <= n) {
+            div1.innerHTML =
+              div1.innerHTML +
+              "Площадь повреждённой территории на " +
+              i +
+              " участке: <input type=text id='ploshad" +
+              i +
+              "'><br>";
+          }
+        }
+        div1.innerHTML =
+          div1.innerHTML +
+          "<hr><input type=button value='Поиск аномальных значений' onClick='Calc()' id='Button2'><br>";
+        div1.innerHTML =
+          div1.innerHTML +
+          "Общая площадь повреждённой территории: <input type=text id='SumPloshad'><br>";
+        div1.innerHTML =
+          div1.innerHTML +
+          "Средняя площадь повреждённой территории: <input type=text id='SredPloshad'><br>";
+        div1.innerHTML =
+          div1.innerHTML +
+          "Среднеквадратическое отклонение: <input type=text id='Otklonenie'><br>";
+        div1.innerHTML =
+          div1.innerHTML + "Коэффициент: <input type=text id='koef'><br>";
+      }
+    </script>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>inst</title>
-    
-</head>
-<body>
-    
-</body>
+  </head>
+  <body>
+    <b>Количество лесных участков, подверженных болезни</b><br /><br />
+    <input type="text" value="10" id="ChisloYchastkov" /><br /><br />
+    <input
+      type="button"
+      value="Далее"
+      onClick="TableYchastki()"
+      id="Button1"
+    /><br />
+    <hr />
+    <div id="div1" style="display: none"></div>
+  </body>
 </html>
