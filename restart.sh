@@ -1,0 +1,1 @@
+docker container stop inst ; docker container start inst

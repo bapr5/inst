@@ -1,0 +1,1 @@
+docker run -d -p 1337:80 -v ./site/index.html:/usr/share/caddy/index.html --name inst caddy 
