@@ -1,9 +1,20 @@
 <!DOCTYPE html>
 <html lang="en">
   <head>
+    <link rel="stylesheet" href="style.css" />
     <script language="Javascript">
+      function fillRandom() {
+        for (let i = 1; i < Number(ChisloYchastkov.value); i++) {
+          document.querySelector(`#ploshad${i}`).value = String(getRandomInt(0, 25));
+        }
+      }
+      function getRandomInt(min, max) {
+        const minCeiled = Math.ceil(min);
+        const maxFloored = Math.floor(max);
+        return Math.floor(Math.random() * (maxFloored - minCeiled) + minCeiled);
+      }
       function getK(n) {
-        console.log(n)
+        console.log(n);
         if (n <= 5) {
           return 1.791;
         } else if (5 < n < 10) {
@@ -18,15 +29,26 @@
           return 2.146;
         }
       }
+      function clearElement(id) {
+        const elem = document.querySelector(id);
+        if (elem) {
+          elem.textContent = "";
+        }
+      }
+
+      function clearField(fieldName) {
+        document.getElementById(fieldName).style.background = "white";
+      }
       function Calc() {
         let k = 2.146;
-        koef.value = k;
         let n = ChisloYchastkov.value;
-        k = getK(n)
-        console.log(k)
+
+        k = getK(n);
+        koef.value = k;
         SumPloshad.value = 0;
         SredPloshad.value = 0;
         Otklonenie.value = 0;
+
         for (let i = 1; i <= n; i++) {
           if (i <= n) {
             element1 = "ploshad" + i;
@@ -34,6 +56,7 @@
               +SumPloshad.value + +document.getElementById(element1).value;
           }
         }
+
         SredPloshad.value = SumPloshad.value / n;
         for (let i = 1; i <= n; i++) {
           if (i <= n) {
@@ -46,9 +69,11 @@
               );
           }
         }
+
         Otklonenie.value = Math.sqrt(Otklonenie.value / n);
         for (let i = 1; i <= n; i++) {
           element1 = "ploshad" + i;
+          clearField(element1);
           if (
             (document.getElementById(element1).value - SredPloshad.value) /
               Otklonenie.value >=
@@ -61,18 +86,28 @@
 
       function TableYchastki() {
         let n = ChisloYchastkov.value;
+
+        clearElement("#div1");
+
         div1.style.display = "block";
+
+        let table = document.createElement("table");
+        let headerRow = table.insertRow();
+        let headerCell1 = headerRow.insertCell(0);
+        headerCell1.innerHTML = "Участок";
+        let headerCell2 = headerRow.insertCell(1);
+        headerCell2.innerHTML = "Площадь повреждённой территории";
+
         for (let i = 1; i <= n; i++) {
-          if (i <= n) {
-            div1.innerHTML =
-              div1.innerHTML +
-              "Площадь повреждённой территории на " +
-              i +
-              " участке: <input type=text id='ploshad" +
-              i +
-              "'><br>";
-          }
+          let row = table.insertRow();
+          let cell1 = row.insertCell(0);
+          cell1.innerHTML = "Участок " + i;
+          let cell2 = row.insertCell(1);
+          cell2.innerHTML = "<input type='text' id='ploshad" + i + "'>";
         }
+
+        div1.innerHTML = "";
+        div1.appendChild(table);
         div1.innerHTML =
           div1.innerHTML +
           "<hr><input type=button value='Поиск аномальных значений' onClick='Calc()' id='Button2'><br>";
@@ -95,7 +130,17 @@
   </head>
   <body>
     <b>Количество лесных участков, подверженных болезни</b><br /><br />
-    <input type="text" value="10" id="ChisloYchastkov" /><br /><br />
+    <input type="text" value="10" id="ChisloYchastkov" />
+    <button onClick="ChisloYchastkov.value=Number(ChisloYchastkov.value)-1">
+      -
+    </button>
+    <button onClick="ChisloYchastkov.value=Number(ChisloYchastkov.value)+1">
+      +
+    </button>
+    <button onClick="ChisloYchastkov.value=6;TableYchastki(); fillRandom();">
+      Заполнить случайными данными
+    </button>
+    <br /><br />
     <input
       type="button"
       value="Далее"
