@@ -4,7 +4,7 @@
     <link rel="stylesheet" href="style.css" />
     <script language="Javascript">
       function fillRandom() {
-        for (let i = 1; i < Number(ChisloYchastkov.value); i++) {
+        for (let i = 1; i <= Number(ChisloYchastkov.value); i++) {
           document.querySelector(`#ploshad${i}`).value = String(getRandomInt(0, 25));
         }
       }
