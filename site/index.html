@@ -3,6 +3,10 @@
   <head>
     <link rel="stylesheet" href="style.css" />
     <script language="Javascript">
+      let parametr = location.search.substring(1).split("&");
+      
+      let anomalFound = false;
+
       function fillRandom() {
         for (let i = 1; i <= Number(ChisloYchastkov.value); i++) {
           document.querySelector(`#ploshad${i}`).value = String(
@@ -10,11 +14,18 @@
           );
         }
       }
+
       function myLoad() {
         if (localStorage["ChisloYchastkov"] > 0) {
           ChisloYchastkov.value = localStorage["ChisloYchastkov"];
         }
+        if (parametr.length > 1) {
+          ChisloYchastkov.value = parametr.length;
+          TableYchastki()
+          Calc()
+        }
       }
+
       function getRandomInt(min, max) {
         const minCeiled = Math.ceil(min);
         const maxFloored = Math.floor(max);
@@ -57,6 +68,7 @@
       function Calc() {
         let k = 2.146;
         let n = ChisloYchastkov.value;
+        anomalFound = false;
 
         k = getK(n);
         console.log("k=", k);
@@ -100,8 +112,10 @@
             const cell = document.getElementById(element1);
             cell.style.background = "red";
             insertContextCell(cell.parentNode);
+            anomalFound=true;
           }
         }
+        // return anomalExists;
       }
 
       function AnomalHide() {
@@ -193,7 +207,32 @@
         }
         Calc();
       }
-
+      function preSaveCheck() {
+        Calc()
+        console.log(anomalFound)
+        if(anomalFound){
+          userConfirmation = confirm("В данных все еще могут быть аномальные значения. Точно сохранить?")
+          if (userConfirmation){
+            saveResults();
+          }
+        } else{
+          saveResults();
+        }
+      }
+      function saveResults() {
+          let n = ChisloYchastkov.value;
+          let mysavedtext = "";
+          for (let i = 1; i <= n; i++) {
+            element1 = "ploshad" + i;
+            mysavedtext =
+              mysavedtext + document.getElementById(element1).value + ";";
+          }
+          document.write(
+            '<a href="data:text/plain;charset=utf-8,%EF%BB%BF' +
+              encodeURIComponent(mysavedtext) +
+              '" download="значения.txt">значения.txt</a>'
+          );
+        }
       function TableYchastki() {
         let n = localStorage["ChisloYchastkov"] || ChisloYchastkov.value;
         console.log("got n:", n);
@@ -224,17 +263,21 @@
           let cell1 = row.insertCell(0);
           cell1.innerHTML = "Участок " + i;
           let cell2 = row.insertCell(1);
+          if (localStorage[element1] == undefined) {
+            localStorage[element1] = "";
+          }
+          if (parametr.length > 1) {
+            localStorage[element1] = parametr[i - 1];
+          }
           cell2.innerHTML =
             "<input type='text' id='ploshad" +
             i +
             "' value='" +
             localStorage[element1] +
             "''>";
-
-          if (localStorage[element1] == undefined) {
-            localStorage[element1] = "";
-          }
         }
+
+
 
         div1.innerHTML = "";
         div1.appendChild(table);
@@ -293,5 +336,6 @@
       placeholder="Скопируйте сюда все значения"
       style="width: 300px"
     ></textarea>
+    <button onClick="preSaveCheck()">Сохранить</button>
   </body>
 </html>
