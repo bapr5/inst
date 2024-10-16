@@ -3,8 +3,10 @@
   <head>
     <link rel="stylesheet" href="style.css" />
     <script language="Javascript">
+      var maxv;
+
       let parametr = location.search.substring(1).split("&");
-      
+
       let anomalFound = false;
 
       function fillRandom() {
@@ -21,8 +23,8 @@
         }
         if (parametr.length > 1) {
           ChisloYchastkov.value = parametr.length;
-          TableYchastki()
-          Calc()
+          TableYchastki();
+          Calc();
         }
       }
 
@@ -83,6 +85,9 @@
             localStorage[element1] = document.getElementById(element1).value;
             SumPloshad.value =
               +SumPloshad.value + +document.getElementById(element1).value;
+            if (parseFloat(document.getElementById(element1).value) > maxv) {
+              maxv = parseFloat(document.getElementById(element1).value);
+            }
           }
         }
 
@@ -112,10 +117,11 @@
             const cell = document.getElementById(element1);
             cell.style.background = "red";
             insertContextCell(cell.parentNode);
-            anomalFound=true;
+            anomalFound = true;
           }
         }
         // return anomalExists;
+        CanvDraw();
       }
 
       function AnomalHide() {
@@ -208,31 +214,89 @@
         Calc();
       }
       function preSaveCheck() {
-        Calc()
-        console.log(anomalFound)
-        if(anomalFound){
-          userConfirmation = confirm("В данных все еще могут быть аномальные значения. Точно сохранить?")
-          if (userConfirmation){
+        Calc();
+        console.log(anomalFound);
+        if (anomalFound) {
+          userConfirmation = confirm(
+            "В данных все еще могут быть аномальные значения. Точно сохранить?"
+          );
+          if (userConfirmation) {
             saveResults();
           }
-        } else{
+        } else {
           saveResults();
         }
       }
-      function saveResults() {
-          let n = ChisloYchastkov.value;
-          let mysavedtext = "";
-          for (let i = 1; i <= n; i++) {
-            element1 = "ploshad" + i;
-            mysavedtext =
-              mysavedtext + document.getElementById(element1).value + ";";
-          }
-          document.write(
-            '<a href="data:text/plain;charset=utf-8,%EF%BB%BF' +
-              encodeURIComponent(mysavedtext) +
-              '" download="значения.txt">значения.txt</a>'
-          );
+
+      function CanvDraw() {
+        let max = koef.value * Otklonenie.value + +SredPloshad.value;
+        let mid = parseFloat(SredPloshad.value);
+        let disp = mid + parseFloat(Otklonenie.value);
+        let canv = document.getElementById("canv");
+        let ctx = canv.getContext("2d");
+        let koord;
+        canv.width = 600;
+        canv.height = 300;
+        ctx.beginPath();
+        ctx.strokeStyle = "black";
+        ctx.lineWidth = 1;
+        ctx.moveTo(5.5, 5.5);
+        ctx.lineTo(3.5, 15.5);
+        ctx.moveTo(5.5, 5.5);
+        ctx.lineTo(7.5, 15.5);
+        ctx.moveTo(5.5, 5.5);
+        ctx.lineTo(5.5, 280.5);
+        ctx.lineTo(590.5, 280.5);
+        ctx.lineTo(580.5, 278.5);
+        ctx.moveTo(590.5, 280.5);
+        ctx.lineTo(580.5, 282.5);
+        ctx.stroke();
+        let n = ChisloYchastkov.value;
+        for (let i = 1; i <= n; i++) {
+          element1 = "ploshad" + i;
+          koord = document.getElementById(element1).value;
+          ctx.moveTo(5.5 + (570.5 * koord) / maxv - 3, 152.5);
+          ctx.lineTo(5.5 + (570.5 * koord) / maxv + 3, 146.5);
+          ctx.stroke();
+          ctx.moveTo(5.5 + (570.5 * koord) / maxv + 3, 152.5);
+          ctx.lineTo(5.5 + (570.5 * koord) / maxv - 3, 146.5);
+          ctx.stroke();
         }
+        ctx.closePath();
+        ctx.beginPath();
+        ctx.strokeStyle = "red";
+        ctx.moveTo(5.5 + (570.5 * max) / maxv, 5.5);
+        ctx.lineTo(5.5 + (570.5 * max) / maxv, 280.5);
+        ctx.stroke();
+        ctx.closePath();
+        ctx.beginPath();
+        ctx.strokeStyle = "green";
+        ctx.moveTo(5.5 + (570.5 * mid) / maxv, 5.5);
+        ctx.lineTo(5.5 + (570.5 * mid) / maxv, 280.5);
+        ctx.stroke();
+        ctx.closePath();
+        ctx.beginPath();
+        ctx.strokeStyle = "yellow";
+        ctx.moveTo(5.5 + (570.5 * disp) / maxv, 5.5);
+        ctx.lineTo(5.5 + (570.5 * disp) / maxv, 280.5);
+        ctx.stroke();
+        ctx.closePath();
+      }
+
+      function saveResults() {
+        let n = ChisloYchastkov.value;
+        let mysavedtext = "";
+        for (let i = 1; i <= n; i++) {
+          element1 = "ploshad" + i;
+          mysavedtext =
+            mysavedtext + document.getElementById(element1).value + ";";
+        }
+        document.write(
+          '<a href="data:text/plain;charset=utf-8,%EF%BB%BF' +
+            encodeURIComponent(mysavedtext) +
+            '" download="значения.txt">значения.txt</a>'
+        );
+      }
       function TableYchastki() {
         let n = localStorage["ChisloYchastkov"] || ChisloYchastkov.value;
         console.log("got n:", n);
@@ -276,8 +340,6 @@
             localStorage[element1] +
             "''>";
         }
-
-
 
         div1.innerHTML = "";
         div1.appendChild(table);
@@ -337,5 +399,10 @@
       style="width: 300px"
     ></textarea>
     <button onClick="preSaveCheck()">Сохранить</button>
+    <canvas
+      id="canv"
+      style="width: 500px; height: 250px; border: 1px double black"
+      >Обновите браузер</canvas
+    >
   </body>
 </html>
