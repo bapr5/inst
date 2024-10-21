@@ -5,33 +5,48 @@
     <script language="Javascript">
       var maxv;
 
-      let parametr = location.search.substring(1).split("&");
-
-      let anomalFound = false;
-
-      function fillRandom() {
-        for (let i = 1; i <= Number(ChisloYchastkov.value); i++) {
-          document.querySelector(`#ploshad${i}`).value = String(
-            getRandomInt(0, 25)
-          );
-        }
-      }
-
-      function myLoad() {
-        if (localStorage["ChisloYchastkov"] > 0) {
-          ChisloYchastkov.value = localStorage["ChisloYchastkov"];
-        }
-        if (parametr.length > 1) {
-          ChisloYchastkov.value = parametr.length;
-          TableYchastki();
-          Calc();
-        }
-      }
+      let params = location.search.substring(1).split("&");
 
       function getRandomInt(min, max) {
         const minCeiled = Math.ceil(min);
         const maxFloored = Math.floor(max);
         return Math.floor(Math.random() * (maxFloored - minCeiled) + minCeiled);
+      }
+
+      function saveLocalStorage(squaresList) {
+        localStorage["squares"] = JSON.stringify(squaresList);
+      }
+
+      function getLocalStorage() {
+        return JSON.parse(localStorage["squares"]);
+      }
+
+      function pageLoad() {
+        const paramsLength = params.length;
+        const storedLength = getLocalStorage().length;
+
+        if (paramsLength > 1) {
+          genTable(paramsLength);
+          squaresNumber.value = paramsLength;
+          saveLocalStorage(params);
+          fillTable(params);
+        } else if (storedLength) {
+          genTable(storedLength);
+          fillTable(getLocalStorage());
+          squaresNumber.value = storedLength;
+        }
+      }
+
+      function loadNumbersFromCells() {
+        let result = [];
+        for (let i = 0; i < Number.MAX_SAFE_INTEGER; i++) {
+          try {
+            let cell = document.getElementById("square" + i);
+            result[i] = cell.value;
+          } catch (error) {
+            return result;
+          }
+        }
       }
 
       function getK(n) {
@@ -51,9 +66,12 @@
       }
 
       function insertContextCell(cell) {
-        const contextCell = cell.parentNode.insertCell();
-        contextCell.innerHTML =
-          '<input type="button" value="-" onclick="this.parentNode.remove();AnomalHide();" id="Button3"><input type="button" value="mid" onclick="this.parentNode.remove();AnomalMid();" id="Button4">  <input type="button" value="max" onclick="this.parentNode.remove();AnomalMax();" id="Button5"> <input type="button" value="maxA" onclick="this.parentNode.remove();AnomalMaxCalc()" id="Button6">';
+        const id = cell.id;
+        const contextCell = cell.parentNode.parentNode.insertCell();
+        if (!document.getElementById("contextCell")) {
+          contextCell.innerHTML = `<div id="contextCell"><input type="button" value="-" onclick="this.parentNode.remove();anomalHide(${id});" id="Button3"><input type="button" value="mid" onclick="this.parentNode.remove();anomalMid(${id});" id="Button4">  <input type="button" value="max" onclick="this.parentNode.remove();anomalMax(${id});" id="Button5"> <input type="button" value="maxA" onclick="this.parentNode.remove();anomalMaxCalc(${id})" id="Button6">`;
+          // '<div id="contextCell"><input type="button" value="-" onclick="this.parentNode.remove();AnomalHide();" id="Button3"><input type="button" value="mid" onclick="this.parentNode.remove();AnomalMid();" id="Button4">  <input type="button" value="max" onclick="this.parentNode.remove();AnomalMax();" id="Button5"> <input type="button" value="maxA" onclick="this.parentNode.remove();AnomalMaxCalc()" id="Button6">';
+        }
       }
 
       function clearElement(id) {
@@ -67,156 +85,8 @@
         document.getElementById(fieldName).style.background = "white";
       }
 
-      function Calc() {
-        let k = 2.146;
-        let n = ChisloYchastkov.value;
-        anomalFound = false;
-
-        k = getK(n);
-        console.log("k=", k);
-        koef.value = k;
-        SumPloshad.value = 0;
-        SredPloshad.value = 0;
-        Otklonenie.value = 0;
-
-        for (let i = 1; i <= n; i++) {
-          if (i <= n) {
-            element1 = "ploshad" + i;
-            localStorage[element1] = document.getElementById(element1).value;
-            SumPloshad.value =
-              +SumPloshad.value + +document.getElementById(element1).value;
-            if (parseFloat(document.getElementById(element1).value) > maxv) {
-              maxv = parseFloat(document.getElementById(element1).value);
-            }
-          }
-        }
-
-        SredPloshad.value = (SumPloshad.value / n).toFixed(1);
-        for (let i = 1; i <= n; i++) {
-          if (i <= n) {
-            element1 = "ploshad" + i;
-            Otklonenie.value =
-              +Otklonenie.value +
-              Math.pow(
-                document.getElementById(element1).value - SredPloshad.value,
-                2
-              );
-          }
-        }
-
-        Otklonenie.value = Math.sqrt(Otklonenie.value / n);
-
-        for (let i = 1; i <= n; i++) {
-          element1 = "ploshad" + i;
-          clearField(element1);
-          if (
-            (document.getElementById(element1).value - SredPloshad.value) /
-              Otklonenie.value >=
-            k
-          ) {
-            const cell = document.getElementById(element1);
-            cell.style.background = "red";
-            insertContextCell(cell.parentNode);
-            anomalFound = true;
-          }
-        }
-        // return anomalExists;
-        CanvDraw();
-      }
-
-      function AnomalHide() {
-        let myarray = [];
-        let j = 0;
-        let n = ChisloYchastkov.value;
-        for (let i = 1; i <= n; i++) {
-          element1 = "ploshad" + i;
-          if (
-            (document.getElementById(element1).value - SredPloshad.value) /
-              Otklonenie.value <
-            koef.value
-          ) {
-            myarray[j] = document.getElementById(element1).value;
-            j = j + 1;
-          }
-        }
-        ChisloYchastkov.value = j;
-        console.log(j);
-        localStorage["ChisloYchastkov"] = localStorage["ChisloYchastkov"] - 1; // dumb wat to do
-        TableYchastki();
-        for (let i = 1; i <= j; i++) {
-          element1 = "ploshad" + i;
-          document.getElementById(element1).value = myarray[i - 1];
-        }
-        Calc();
-      }
-
-      function AnomalMid() {
-        let n = ChisloYchastkov.value;
-        for (let i = 1; i <= n; i++) {
-          element1 = "ploshad" + i;
-          if (
-            (document.getElementById(element1).value - SredPloshad.value) /
-              Otklonenie.value >=
-            koef.value
-          ) {
-            document.getElementById(element1).value = Math.floor(
-              SredPloshad.value
-            );
-            document.getElementById(element1).style.background = "white";
-          }
-        }
-        Calc();
-      }
-
-      function AnomalMaxCalc() {
-        let n = ChisloYchastkov.value;
-        for (let i = 1; i <= n; i++) {
-          element1 = "ploshad" + i;
-          if (
-            (document.getElementById(element1).value - SredPloshad.value) /
-              Otklonenie.value >=
-            koef.value
-          ) {
-            document.getElementById(element1).value = Math.floor(
-              0.99 * (koef.value * Otklonenie.value + +SredPloshad.value)
-            );
-            document.getElementById(element1).style.background = "white";
-          }
-        }
-        Calc();
-      }
-
-      function AnomalMax() {
-        let mymax = 0;
-        let n = ChisloYchastkov.value;
-        for (let i = 1; i <= n; i++) {
-          element1 = "ploshad" + i;
-          if (
-            document.getElementById(element1).value > Number(mymax) &&
-            (document.getElementById(element1).value - SredPloshad.value) /
-              Otklonenie.value <
-              koef.value
-          ) {
-            mymax = document.getElementById(element1).value;
-          }
-        }
-        for (let i = 1; i <= n; i++) {
-          element1 = "ploshad" + i;
-          if (
-            (document.getElementById(element1).value - SredPloshad.value) /
-              Otklonenie.value >=
-            koef.value
-          ) {
-            document.getElementById(element1).value = mymax;
-            document.getElementById(element1).style.background = "white";
-          }
-        }
-        Calc();
-      }
       function preSaveCheck() {
-        Calc();
-        console.log(anomalFound);
-        if (anomalFound) {
+        if (checkForAnomal().anomalFound) {
           userConfirmation = confirm(
             "В данных все еще могут быть аномальные значения. Точно сохранить?"
           );
@@ -226,6 +96,118 @@
         } else {
           saveResults();
         }
+      }
+
+      function checkForAnomal() {
+        let numbers = loadNumbersFromCells();
+        n = numbers.length;
+        k = getK(numbers.length);
+
+        clearNumbers = [];
+        clearIndexes = [];
+
+        anomalNumbers = [];
+        anomalIndexes = [];
+
+        for (let i = 0; i < n; i++) {
+          if ((numbers[i] - SredPloshad.value) / Otklonenie.value >= k) {
+            anomalIndexes.push(i);
+            anomalNumbers.push(numbers[i]);
+          } else {
+            clearIndexes.push(i);
+            clearNumbers.push(numbers[i]);
+          }
+        }
+        const anomalFound = anomalIndexes.length > 0 ? true : false;
+
+        return {
+          clearIndexes: clearIndexes,
+          clearNumbers: clearNumbers,
+          anomalIndexes: anomalIndexes,
+          anomalNumbers: anomalNumbers,
+          anomalFound: anomalFound,
+        };
+      }
+      function anomalHide(id) {
+        var numericId = String(id.id);
+
+        numericId = numericId.replace(/[^0-9]/g, "");
+
+        var numbers = loadNumbersFromCells();
+        numbers.splice(numericId, 1);
+
+        console.log(numbers);
+
+        genTable(numbers.length);
+        fillTable(numbers);
+        saveLocalStorage(numbers);
+        findAnomaly();
+      }
+
+      function anomalMid(id) {
+        var numericId = String(id.id);
+
+        numericId = numericId.replace(/[^0-9]/g, "");
+
+        var numbers = loadNumbersFromCells();
+
+        numbers[numericId] = Number(
+          document.getElementById("SredPloshad").value
+        );
+
+        console.log(numbers);
+
+        genTable(numbers.length);
+        fillTable(numbers);
+        saveLocalStorage(numbers);
+        findAnomaly();
+      }
+
+      function anomalMax(id) {
+        var numericId = String(id.id);
+
+        numericId = numericId.replace(/[^0-9]/g, "");
+
+        var numbers = loadNumbersFromCells();
+
+        const maxClearNumber = Math.max(...checkForAnomal().clearNumbers);
+
+        numbers[numericId] = maxClearNumber;
+
+        genTable(numbers.length);
+        fillTable(numbers);
+        saveLocalStorage(numbers);
+        findAnomaly();
+      }
+
+      function anomalMaxCalc(id) {
+        var numericId = String(id.id);
+
+        numericId = numericId.replace(/[^0-9]/g, "");
+
+        var numbers = loadNumbersFromCells();
+
+        const newNumber = Math.floor(
+          0.99 * (getK(numbers.length) * Otklonenie.value + +SredPloshad.value)
+        );
+
+        numbers[numericId] = newNumber;
+
+        genTable(numbers.length);
+        fillTable(numbers);
+        saveLocalStorage(numbers);
+        findAnomaly();
+      }
+
+      function fillRandom() {
+        let valuesNumber =
+          Number(document.getElementById("squaresNumber").value) || Number(10);
+        let values = [];
+        genTable(valuesNumber);
+        for (var i = 0; i < valuesNumber; i++) {
+          values[i] = getRandomInt(0, 100);
+        }
+        fillTable(values);
       }
 
       function CanvDraw() {
@@ -254,7 +236,9 @@
         let n = ChisloYchastkov.value;
         for (let i = 1; i <= n; i++) {
           element1 = "ploshad" + i;
-          koord = document.getElementById(element1).value;
+          koord = Number(document.getElementById(element1).value);
+          console.log("drawing X at ", i, ",", koord);
+
           ctx.moveTo(5.5 + (570.5 * koord) / maxv - 3, 152.5);
           ctx.lineTo(5.5 + (570.5 * koord) / maxv + 3, 146.5);
           ctx.stroke();
@@ -284,36 +268,111 @@
       }
 
       function saveResults() {
-        let n = ChisloYchastkov.value;
+        let n = loadNumbersFromCells().length;
+
         let mysavedtext = "";
-        for (let i = 1; i <= n; i++) {
-          element1 = "ploshad" + i;
+        for (let i = 0; i < n; i++) {
+          element1 = "square" + i;
           mysavedtext =
             mysavedtext + document.getElementById(element1).value + ";";
         }
+        console.log(mysavedtext);
         document.write(
           '<a href="data:text/plain;charset=utf-8,%EF%BB%BF' +
             encodeURIComponent(mysavedtext) +
             '" download="значения.txt">значения.txt</a>'
         );
       }
-      function TableYchastki() {
-        let n = localStorage["ChisloYchastkov"] || ChisloYchastkov.value;
-        console.log("got n:", n);
-        let a = mytextarea.value.split(/$\s*/m);
-        if (a.length == 0) {
-          n = ChisloYchastkov.value;
+
+      function initializeTable() {
+        const textareaNumbers = document
+          .getElementById("textarea")
+          .value.split(/$\s*/m);
+        const squaresNumber = Number(
+          document.getElementById("squaresNumber").value
+        );
+
+        clearTable();
+
+        if (textareaNumbers.length > 1) {
+          genTable(textareaNumbers.length);
+          fillTable(textareaNumbers);
+          clearElement("#textarea");
+          document.getElementById("textarea").value = "";
         } else {
-          n = a.length;
-          mytextarea.style.height = n * 15 + "px";
-          ChisloYchastkov.value = n;
+          genTable(squaresNumber);
         }
+      }
 
-        clearElement("#div1");
+      function clearTable() {
+        clearElement("#tableSpace");
+      }
 
-        div1.style.display = "block";
+      function fillTable(elements) {
+        for (let i = 0; i < elements.length; i++) {
+          currentCell = document.getElementById("square" + i);
+          if (currentCell) {
+            currentCell.value = elements[i];
+          }
+        }
+        saveLocalStorage(elements);
+      }
+
+      function findAnomaly() {
+        let numbers = loadNumbersFromCells();
+        n = numbers.length;
+        k = getK(numbers.length);
+        koef.value = k;
+        SumPloshad.value = 0;
+        SredPloshad.value = 0;
+        Otklonenie.value = 0;
+        let sum = 0;
+        for (let i = 0; i < numbers.length; i++) {
+          let element = "square" + i;
+          sum += Number(document.getElementById(element).value);
+        }
+        SumPloshad.value = sum;
+        SredPloshad.value = (SumPloshad.value / n).toFixed(1);
+        for (let i = 0; i < n; i++) {
+          if (i <= n) {
+            let element = "square" + i;
+            Otklonenie.value =
+              +Otklonenie.value +
+              Math.pow(
+                document.getElementById(element).value - SredPloshad.value,
+                2
+              );
+          }
+        }
+        Otklonenie.value = Math.sqrt(Otklonenie.value / n).toFixed(2);
+
+        for (let i = 0; i < n; i++) {
+          let element = "square" + i;
+          clearField(element);
+          if (
+            (document.getElementById(element).value - SredPloshad.value) /
+              Otklonenie.value >=
+            k
+          ) {
+            const cell = document.getElementById(element);
+            cell.style.background = "red";
+            cell.classList.add("anomal");
+            // console.log(cell.id)
+            insertContextCell(cell);
+          }
+        }
+      }
+
+      function genTable(rowsCount) {
+        clearTable();
+
+        const tableSpace = document.getElementById("tableSpace");
+        console.log("got rCount:", rowsCount);
+
+        tableSpace.style.display = "block";
 
         let table = document.createElement("table");
+
         let headerRow = table.insertRow();
         let headerCell1 = headerRow.insertCell(0);
         headerCell1.innerHTML = "Участок";
@@ -321,80 +380,58 @@
         headerCell2.innerHTML = "Площадь";
         let headerCell3 = headerRow.insertCell(2);
         headerCell3.innerHTML = "Действия";
-        for (let i = 1; i <= n; i++) {
-          let element1 = "ploshad" + i;
+
+        for (let i = 0; i < rowsCount; i++) {
           let row = table.insertRow();
           let cell1 = row.insertCell(0);
-          cell1.innerHTML = "Участок " + i;
+          cell1.innerHTML = "Участок " + Number(i + 1);
           let cell2 = row.insertCell(1);
-          if (localStorage[element1] == undefined) {
-            localStorage[element1] = "";
-          }
-          if (parametr.length > 1) {
-            localStorage[element1] = parametr[i - 1];
-          }
-          cell2.innerHTML =
-            "<input type='text' id='ploshad" +
-            i +
-            "' value='" +
-            localStorage[element1] +
-            "''>";
+          cell2.innerHTML = "<input type='text' id='square" + i + "' value=''>";
         }
+        tableSpace.appendChild(table);
 
-        div1.innerHTML = "";
-        div1.appendChild(table);
-        div1.innerHTML =
-          div1.innerHTML +
-          "<hr><input type=button value='Поиск аномальных значений' onClick='Calc()' id='Button2'><br>";
-        div1.innerHTML =
-          div1.innerHTML +
-          "Общая площадь повреждённой территории: <input type=text id='SumPloshad'><br>";
-        div1.innerHTML =
-          div1.innerHTML +
+        tableSpace.innerHTML =
+          tableSpace.innerHTML +
+          "<hr><input type=button value='Поиск аномальных значений' onClick='findAnomaly()' id='Button2'><br>";
+        tableSpace.innerHTML =
+          tableSpace.innerHTML +
           "Средняя площадь повреждённой территории: <input type=text id='SredPloshad'><br>";
-        div1.innerHTML =
-          div1.innerHTML +
+        tableSpace.innerHTML =
+          tableSpace.innerHTML +
+          "Общая площадь повреждённой территории: <input type=text id='SumPloshad'><br>";
+        tableSpace.innerHTML =
+          tableSpace.innerHTML +
           "Среднеквадратическое отклонение: <input type=text id='Otklonenie'><br>";
-        div1.innerHTML =
-          div1.innerHTML + "Коэффициент: <input type=text id='koef'><br>";
-
-        if (a.length > 0) {
-          for (let i = 1; i <= n; i++) {
-            element1 = "ploshad" + i;
-            document.getElementById(element1).value = a[i - 1];
-          }
-        }
-        localStorage["ChisloYchastkov"] = n;
+        tableSpace.innerHTML =
+          tableSpace.innerHTML + "Коэффициент: <input type=text id='koef'><br>";
       }
     </script>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>inst</title>
   </head>
-  <body onLoad="myLoad()">
+  <body onLoad="pageLoad()">
     <b>Количество лесных участков, подверженных болезни</b><br /><br />
-    <input type="text" value="10" id="ChisloYchastkov" />
-    <button onClick="ChisloYchastkov.value=Number(ChisloYchastkov.value)-1">
+    <input type="text" value="10" id="squaresNumber" />
+    <button onClick="squaresNumber.value=Number(squaresNumber.value)-1">
       -
     </button>
-    <button onClick="ChisloYchastkov.value=Number(ChisloYchastkov.value)+1">
+    <button onClick="squaresNumber.value=Number(squaresNumber.value)+1">
       +
     </button>
-    <button onClick="TableYchastki(); fillRandom();">
-      Заполнить случайными данными
-    </button>
+    <button onClick="fillRandom();">Заполнить случайными данными</button>
     <br /><br />
     <input
       type="button"
       value="Далее"
-      onClick="TableYchastki();Calc();mytextarea.value=''"
+      onClick="initializeTable();"
       id="Button1"
     /><br />
     <hr />
-    <div id="div1" style="display: none"></div>
+    <div id="tableSpace" style="display: none"></div>
     <br />
     <textarea
-      id="mytextarea"
+      id="textarea"
       placeholder="Скопируйте сюда все значения"
       style="width: 300px"
     ></textarea>
