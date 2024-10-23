@@ -31,4 +31,4 @@ random_values+="&$last_value"
 
 url="http://127.0.0.1:1337/index.html?$random_values"
 
-flatpak run org.mozilla.firefox "$url" #FLATPAK MOMENT
+flatpak run org.mozilla.firefox "$url" & #FLATPAK MOMENT
