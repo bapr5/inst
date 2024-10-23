@@ -3,7 +3,6 @@
   <head>
     <link rel="stylesheet" href="style.css" />
     <script language="Javascript">
-      var maxv;
 
       let params = location.search.substring(1).split("&");
 
@@ -30,6 +29,7 @@
           squaresNumber.value = paramsLength;
           saveLocalStorage(params);
           fillTable(params);
+          findAnomaly();
         } else if (storedLength) {
           genTable(storedLength);
           fillTable(getLocalStorage());
@@ -153,9 +153,9 @@
 
         numbers[numericId] = Number(
           document.getElementById("SredPloshad").value
-        );
+        ).toFixed(0);
 
-        console.log(numbers);
+        // console.log(numbers);
 
         genTable(numbers.length);
         fillTable(numbers);
@@ -189,7 +189,7 @@
 
         const newNumber = Math.floor(
           0.99 * (getK(numbers.length) * Otklonenie.value + +SredPloshad.value)
-        );
+        ).toFixed(0);
 
         numbers[numericId] = newNumber;
 
@@ -210,8 +210,11 @@
         fillTable(values);
       }
 
-      function CanvDraw() {
-        let max = koef.value * Otklonenie.value + +SredPloshad.value;
+      function canvDraw() {
+        var numbers = loadNumbersFromCells();
+        const maxv = Math.max(...numbers)
+
+        let max = getK(numbers.length) * Otklonenie.value + +SredPloshad.value;
         let mid = parseFloat(SredPloshad.value);
         let disp = mid + parseFloat(Otklonenie.value);
         let canv = document.getElementById("canv");
@@ -233,12 +236,11 @@
         ctx.moveTo(590.5, 280.5);
         ctx.lineTo(580.5, 282.5);
         ctx.stroke();
-        let n = ChisloYchastkov.value;
-        for (let i = 1; i <= n; i++) {
-          element1 = "ploshad" + i;
-          koord = Number(document.getElementById(element1).value);
-          console.log("drawing X at ", i, ",", koord);
+        let n = numbers.length;
+        for (let i = 0; i < n; i++) {
 
+          koord = numbers[i];
+          console.log("drawing X at ", i, ",", koord);
           ctx.moveTo(5.5 + (570.5 * koord) / maxv - 3, 152.5);
           ctx.lineTo(5.5 + (570.5 * koord) / maxv + 3, 146.5);
           ctx.stroke();
@@ -299,6 +301,7 @@
           fillTable(textareaNumbers);
           clearElement("#textarea");
           document.getElementById("textarea").value = "";
+          findAnomaly();
         } else {
           genTable(squaresNumber);
         }
@@ -361,6 +364,7 @@
             insertContextCell(cell);
           }
         }
+        canvDraw();
       }
 
       function genTable(rowsCount) {
