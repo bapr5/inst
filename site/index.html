@@ -3,7 +3,6 @@
   <head>
     <link rel="stylesheet" href="style.css" />
     <script language="Javascript">
-
       let params = location.search.substring(1).split("&");
 
       function getRandomInt(min, max) {
@@ -103,7 +102,7 @@
         n = numbers.length;
         k = getK(numbers.length);
 
-        clearNumbers = [];
+        clearNumbers = []; //
         clearIndexes = [];
 
         anomalNumbers = [];
@@ -212,7 +211,7 @@
 
       function canvDraw() {
         var numbers = loadNumbersFromCells();
-        const maxv = Math.max(...numbers)
+        const maxv = Math.max(...numbers);
 
         let max = getK(numbers.length) * Otklonenie.value + +SredPloshad.value;
         let mid = parseFloat(SredPloshad.value);
@@ -238,14 +237,13 @@
         ctx.stroke();
         let n = numbers.length;
         for (let i = 0; i < n; i++) {
-
+          const j = (i+1 - numbers.length / 2) * 7.5;
           koord = numbers[i];
-          console.log("drawing X at ", i, ",", koord);
-          ctx.moveTo(5.5 + (570.5 * koord) / maxv - 3, 152.5);
-          ctx.lineTo(5.5 + (570.5 * koord) / maxv + 3, 146.5);
+          ctx.moveTo(5.5 + (570.5 * koord) / maxv - 3, 152.5 + j);
+          ctx.lineTo(5.5 + (570.5 * koord) / maxv + 3, 146.5 + j); //+4
           ctx.stroke();
-          ctx.moveTo(5.5 + (570.5 * koord) / maxv + 3, 152.5);
-          ctx.lineTo(5.5 + (570.5 * koord) / maxv - 3, 146.5);
+          ctx.moveTo(5.5 + (570.5 * koord) / maxv + 3, 152.5 + j);
+          ctx.lineTo(5.5 + (570.5 * koord) / maxv - 3, 146.5 + j); //+4
           ctx.stroke();
         }
         ctx.closePath();
