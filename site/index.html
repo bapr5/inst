@@ -242,11 +242,13 @@
         const j = (i + 1 - numbers.length / 2) * 7.5;
         koord = numbers[i];
         ctx.moveTo(5.5 + (570.5 * koord) / maxv - 3, 152.5 + j);
-        ctx.lineTo(5.5 + (570.5 * koord) / maxv + 3, 146.5 + j); //+4
+        ctx.lineTo(5.5 + (570.5 * koord) / maxv + 3, 146.5 + j); 
         ctx.stroke();
         ctx.moveTo(5.5 + (570.5 * koord) / maxv + 3, 152.5 + j);
-        ctx.lineTo(5.5 + (570.5 * koord) / maxv - 3, 146.5 + j); //+4
+        ctx.lineTo(5.5 + (570.5 * koord) / maxv - 3, 146.5 + j); 
         ctx.stroke();
+        ctx.fillText(Math.round(koord), 5.5+570.5*koord/maxv-5, 295.5);
+
       }
       ctx.closePath();
       ctx.beginPath();
@@ -273,6 +275,8 @@
       ctx.lineTo(5.5 + (570.5 * dispLeft) / maxv, 280.5);
       ctx.stroke();
       ctx.closePath();
+
+      
       // ctx.beginPath();
       // ctx.strokeStyle = "yellow";
       // ctx.moveTo(5.5 + (570.5 * disp) - (570.5 * mid) / maxv, 5.5);
