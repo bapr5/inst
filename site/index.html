@@ -255,23 +255,39 @@
       ctx.stroke();
       ctx.closePath();
       ctx.beginPath();
+
+      ctx.fillText("Аномал", (570.5 * max) / maxv,10)
+      ctx.fillText(max.toFixed(2), (570.5 * max) / maxv,20)
+
       ctx.strokeStyle = "green"; 
       ctx.moveTo(5.5 + (570.5 * mid) / maxv, 5.5);
       ctx.lineTo(5.5 + (570.5 * mid) / maxv, 280.5);
       ctx.stroke();
       ctx.closePath();
+
+      ctx.fillText("Сред", (570.5 * mid) / maxv,10)
+      ctx.fillText(mid.toFixed(2), (570.5 * mid) / maxv,20)
+
       ctx.beginPath();
       ctx.strokeStyle = "yellow";
       ctx.moveTo(5.5 + (570.5 * disp) / maxv, 5.5);
       ctx.lineTo(5.5 + (570.5 * disp) / maxv, 280.5);
       ctx.stroke();
       ctx.closePath();
+
+      ctx.fillText("Откл", (570.5 * disp) / maxv,10)
+      ctx.fillText(disp.toFixed(2), (570.5 * disp) / maxv,20)
+
       ctx.beginPath();
       ctx.strokeStyle = "yellow";
       ctx.moveTo(5.5 + (570.5 * dispLeft) / maxv, 5.5);
       ctx.lineTo(5.5 + (570.5 * dispLeft) / maxv, 280.5);
       ctx.stroke();
       ctx.closePath();
+
+      ctx.fillText("Откл", (570.5 * dispLeft) / maxv,10)
+      ctx.fillText(dispLeft.toFixed(2), (570.5 * dispLeft) / maxv,20)
+
     }
 
     function saveResults() {
