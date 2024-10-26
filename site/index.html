@@ -48,6 +48,19 @@
         }
       }
 
+      function loadCoordsFromCells() {
+        let result = [];
+        for (let i = 0; i < Number.MAX_SAFE_INTEGER; i++) {
+          try {
+            let cell = document.getElementById("coord" + i);
+            cell = cell.split(";")
+            result[i] = cell;
+          } catch (error) {
+            return result;
+          }
+        }
+      }
+
       function getK(n) {
         if (n <= 5) {
           return 1.791;
@@ -400,6 +413,7 @@
             cell.classList.add("anomal");
             insertContextCell(cell);
           }
+          let coord = "";
         }
         canvDraw();
       }
@@ -420,7 +434,9 @@
         let headerCell2 = headerRow.insertCell(1);
         headerCell2.innerHTML = "Площадь";
         let headerCell3 = headerRow.insertCell(2);
-        headerCell3.innerHTML = "Действия";
+        headerCell3.innerHTML = "Координаты участка";
+        let headerCell4 = headerRow.insertCell(3);
+        headerCell4.innerHTML = "Действия";
 
         for (let i = 0; i < rowsCount; i++) {
           let row = table.insertRow();
@@ -428,6 +444,8 @@
           cell1.innerHTML = "Участок " + Number(i + 1);
           let cell2 = row.insertCell(1);
           cell2.innerHTML = "<input type='text' id='square" + i + "' value=''>";
+          let cell3 = row.insertCell(2);
+          cell3.innerHTML = "<input type='text' id='coord" + i + "' value=''>";
         }
         tableSpace.appendChild(table);
 
@@ -480,6 +498,11 @@
     <button onClick="preSaveCheck()">Сохранить</button>
     <canvas
       id="canv"
+      style="width: 500px; height: 250px; border: 1px double black"
+      >Обновите браузер</canvas
+    >
+    <canvas
+      id="canv2"
       style="width: 500px; height: 250px; border: 1px double black"
       >Обновите браузер</canvas
     >
