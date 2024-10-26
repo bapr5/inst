@@ -70,7 +70,6 @@
       const contextCell = cell.parentNode.parentNode.insertCell();
       if (!document.getElementById("contextCell")) {
         contextCell.innerHTML = `<div id="contextCell"><input type="button" value="-" onclick="this.parentNode.remove();anomalHide(${id});" id="Button3"><input type="button" value="mid" onclick="this.parentNode.remove();anomalMid(${id});" id="Button4">  <input type="button" value="max" onclick="this.parentNode.remove();anomalMax(${id});" id="Button5"> <input type="button" value="maxA" onclick="this.parentNode.remove();anomalMaxCalc(${id})" id="Button6">`;
-        // '<div id="contextCell"><input type="button" value="-" onclick="this.parentNode.remove();AnomalHide();" id="Button3"><input type="button" value="mid" onclick="this.parentNode.remove();AnomalMid();" id="Button4">  <input type="button" value="max" onclick="this.parentNode.remove();AnomalMax();" id="Button5"> <input type="button" value="maxA" onclick="this.parentNode.remove();AnomalMaxCalc()" id="Button6">';
       }
     }
 
@@ -154,8 +153,6 @@
       numbers[numericId] = Number(
         document.getElementById("SredPloshad").value
       ).toFixed(0);
-
-      // console.log(numbers);
 
       genTable(numbers.length);
       fillTable(numbers);
@@ -258,7 +255,7 @@
       ctx.stroke();
       ctx.closePath();
       ctx.beginPath();
-      ctx.strokeStyle = "green"; //
+      ctx.strokeStyle = "green"; 
       ctx.moveTo(5.5 + (570.5 * mid) / maxv, 5.5);
       ctx.lineTo(5.5 + (570.5 * mid) / maxv, 280.5);
       ctx.stroke();
@@ -275,16 +272,6 @@
       ctx.lineTo(5.5 + (570.5 * dispLeft) / maxv, 280.5);
       ctx.stroke();
       ctx.closePath();
-
-      
-      // ctx.beginPath();
-      // ctx.strokeStyle = "yellow";
-      // ctx.moveTo(5.5 + (570.5 * disp) - (570.5 * mid) / maxv, 5.5);
-      // ctx.lineTo(5.5 + (570.5 * disp) - (570.5 * mid) / maxv, 280.5);
-      // ctx.stroke();
-      // ctx.closePath();
-
-
     }
 
     function saveResults() {
@@ -378,7 +365,6 @@
           const cell = document.getElementById(element);
           cell.style.background = "red";
           cell.classList.add("anomal");
-          // console.log(cell.id)
           insertContextCell(cell);
         }
       }
