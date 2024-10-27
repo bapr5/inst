@@ -1,1 +1,1 @@
-docker run -d -p 1337:80 -v ./site/d:/usr/share/caddy/ --name inst caddy 
+docker run -d -p 1337:80 -v ./site/:/usr/share/caddy/ --name inst caddy 
