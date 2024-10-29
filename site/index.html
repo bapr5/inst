@@ -519,10 +519,10 @@
 <body onLoad="pageLoad()">
   <b>Количество лесных участков, подверженных болезни</b><br /><br />
   <input type="text" value="10" id="squaresNumber" />
-  <button onClick="squaresNumber.value=Number(squaresNumber.value)-1;genTable(squaresNumber.value);fillTable(get)">
+  <button onClick="squaresNumber.value=Number(squaresNumber.value)-1;genTable(squaresNumber.value);fillTable(getStoredNumbers())">
     -
   </button>
-  <button onClick="squaresNumber.value=Number(squaresNumber.value)+1;genTable(squaresNumber.value);fillTable(numbers)">
+  <button onClick="squaresNumber.value=Number(squaresNumber.value)+1;genTable(squaresNumber.value);fillTable(getStoredNumbers())">
     +
   </button>
   <button onClick="fillRandom();">Заполнить случайными данными</button>
