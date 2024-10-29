@@ -12,27 +12,27 @@
       return Math.floor(Math.random() * (maxFloored - minCeiled) + minCeiled);
     }
 
-    function saveLocalStorage(squaresList) {
+    function saveNumbers(squaresList) {
       localStorage["squares"] = JSON.stringify(squaresList);
     }
 
-    function getLocalStorage() {
+    function getStoredSquares() {
       return JSON.parse(localStorage["squares"]);
     }
 
     function pageLoad() {
       const paramsLength = params.length;
-      const storedLength = getLocalStorage().length;
+      const storedLength = getStoredSquares().length;
 
       if (paramsLength > 1) {
         genTable(paramsLength);
         squaresNumber.value = paramsLength;
-        saveLocalStorage(params);
+        saveNumbers(params);
         fillTable(params);
         findAnomaly();
       } else if (storedLength) {
         genTable(storedLength);
-        fillTable(getLocalStorage());
+        fillTable(getStoredSquares());
         squaresNumber.value = storedLength;
       }
     }
@@ -152,7 +152,7 @@
 
       genTable(numbers.length);
       fillTable(numbers);
-      saveLocalStorage(numbers);
+      saveNumbers(numbers);
       findAnomaly();
     }
 
@@ -169,7 +169,7 @@
 
       genTable(numbers.length);
       fillTable(numbers);
-      saveLocalStorage(numbers);
+      saveNumbers(numbers);
       findAnomaly();
     }
 
@@ -186,7 +186,7 @@
 
       genTable(numbers.length);
       fillTable(numbers);
-      saveLocalStorage(numbers);
+      saveNumbers(numbers);
       findAnomaly();
     }
 
@@ -205,7 +205,7 @@
 
       genTable(numbers.length);
       fillTable(numbers);
-      saveLocalStorage(numbers);
+      saveNumbers(numbers);
       findAnomaly();
     }
 
@@ -370,7 +370,7 @@
           currentCell.value = elements[i];
         }
       }
-      saveLocalStorage(elements);
+      saveNumbers(elements);
     }
 
     function findAnomaly() {
@@ -519,7 +519,7 @@
 <body onLoad="pageLoad()">
   <b>Количество лесных участков, подверженных болезни</b><br /><br />
   <input type="text" value="10" id="squaresNumber" />
-  <button onClick="squaresNumber.value=Number(squaresNumber.value)-1;genTable(squaresNumber.value);fillTable(numbers)">
+  <button onClick="squaresNumber.value=Number(squaresNumber.value)-1;genTable(squaresNumber.value);fillTable()">
     -
   </button>
   <button onClick="squaresNumber.value=Number(squaresNumber.value)+1;genTable(squaresNumber.value);fillTable(numbers)">
