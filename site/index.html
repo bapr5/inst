@@ -45,7 +45,7 @@
       }
     }
 
-    function loadNumbersFromCells() {
+    function loadPolygonsFromCells() {
       let result = [];
       for (let i = 0; i < Number.MAX_SAFE_INTEGER; i++) {
         try {
@@ -119,7 +119,7 @@
     }
 
     function checkForAnomal() {
-      let numbers = loadNumbersFromCells();
+      let numbers = loadPolygonsFromCells();
       n = numbers.length;
       k = getK(numbers.length);
 
@@ -153,14 +153,18 @@
 
       numericId = numericId.replace(/[^0-9]/g, "");
 
-      var numbers = loadNumbersFromCells();
-      numbers.splice(numericId, 1);
+      var numbers = loadPolygonsFromCells();
+      var coords = loadCoordsFromCells();
 
-      console.log(numbers);
+      coords.splice(numericId, 1)
+      numbers.splice(numericId, 1);
 
       genTable(numbers.length);
       fillTable(numbers);
+
       storeNumbers(numbers);
+      storePolygons(coords)
+
       findAnomaly();
     }
 
@@ -169,7 +173,7 @@
 
       numericId = numericId.replace(/[^0-9]/g, "");
 
-      var numbers = loadNumbersFromCells();
+      var numbers = loadPolygonsFromCells();
 
       numbers[numericId] = Number(
         document.getElementById("SredPloshad").value
@@ -186,7 +190,7 @@
 
       numericId = numericId.replace(/[^0-9]/g, "");
 
-      var numbers = loadNumbersFromCells();
+      var numbers = loadPolygonsFromCells();
 
       const maxClearNumber = Math.max(...checkForAnomal().clearNumbers);
 
@@ -203,7 +207,7 @@
 
       numericId = numericId.replace(/[^0-9]/g, "");
 
-      var numbers = loadNumbersFromCells();
+      var numbers = loadPolygonsFromCells();
 
       const newNumber = Math.floor(
         0.99 * (getK(numbers.length) * Otklonenie.value + +SredPloshad.value)
@@ -229,7 +233,7 @@
     }
 
     function canvDraw() {
-      var numbers = loadNumbersFromCells();
+      var numbers = loadPolygonsFromCells();
       const maxv = Math.max(...numbers);
 
       let max = getK(numbers.length) * Otklonenie.value + +SredPloshad.value;
@@ -330,7 +334,7 @@
     }
 
     function saveResults() {
-      let n = loadNumbersFromCells().length;
+      let n = loadPolygonsFromCells().length;
 
       let mysavedtext = "";
       for (let i = 0; i < n; i++) {
@@ -382,7 +386,7 @@
     }
 
     function findAnomaly() {
-      let numbers = loadNumbersFromCells();
+      let numbers = loadPolygonsFromCells();
       n = numbers.length;
       k = getK(numbers.length);
       koef.value = k;
