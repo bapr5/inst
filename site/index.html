@@ -228,7 +228,7 @@
         fillTable(values, getStoredPolygons());
       }
 
-      function canvDraw() {
+      function canvDraw(bgStyle = "white") {
         var numbers = loadNumbersFromCells();
         const maxv = Math.max(...numbers);
 
@@ -238,6 +238,7 @@
         let dispLeft = mid - parseFloat(Otklonenie.value);
         let canv = document.getElementById("canv");
         let ctx = canv.getContext("2d");
+
         let koord;
         canv.width = 600;
         canv.height = 300;
@@ -536,5 +537,42 @@
     <button onClick="preSaveCheck()">Сохранить</button>
     <canvas id="canv" style="width: 500px; height: 250px; border: 1px double black">Обновите браузер</canvas>
     <canvas id="canv2" style="width: 500px; height: 250px; border: 1px double black">Обновите браузер</canvas>
+    <details>
+      <summary>
+        не открывай меня пожалуйста
+        <span class="icon">👇</span>
+      </summary>
+      <p>
+        <img src="design.png" alt="дезигн">
+        <form action="javascript:alert('Hello there, I am being submitted');">
+      <label for="bg">выберите задний фон:</label>
+  <select name="bg" id="bg">
+    <option value="pink">розовенький</option>
+    <option value="white">беленьки</option>
+    <option value="lightblue">голубенький</option>
+  </select>
+  <br>
+  <button type="submit">применить</button>
+
+  <select name="bg" id="bg">
+    <option value="255, 166, 158">красный</option>
+    <option value="250, 243, 221">белый</option>
+    <option value="184, 242, 230">голубенький</option>
+  </select>
+  <br>
+
+
+  <select name="bg" id="bg">
+    <option value="255, 166, 158">белый</option>
+    <option value="250, 243, 221">черный</option>
+    <option value="184, 242, 230">голубенький</option>
+  </select>
+  <br>
+
+
+      </form>
+      </p>
+    </details>
+    
   </body>
 </html>
