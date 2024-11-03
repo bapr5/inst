@@ -20,6 +20,14 @@
       return JSON.parse(localStorage["squares"]);
     }
 
+    function storePolygons(squaresList) {
+      localStorage["polygons"] = JSON.stringify(squaresList);
+    }
+
+    function getStoredPolygons() {
+      return JSON.parse(localStorage["polygons"]);
+    }
+
     function pageLoad() {
       const paramsLength = params.length;
       const storedLength = getStoredNumbers().length;
