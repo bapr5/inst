@@ -25,7 +25,12 @@
     }
 
     function getStoredPolygons() {
-      return JSON.parse(localStorage["polygons"]);
+      try {
+        return JSON.parse(localStorage["polygons"]);
+      } catch (error) {
+        alert("Куда делись полигоны?")
+        storePolygons([])
+      }
     }
 
     function pageLoad() {
@@ -42,10 +47,11 @@
         genTable(storedLength);
         fillTable(getStoredNumbers());
         squaresNumber.value = storedLength;
+
       }
     }
 
-    function loadPolygonsFromCells() {
+    function loadNumbersFromCells() {
       let result = [];
       for (let i = 0; i < Number.MAX_SAFE_INTEGER; i++) {
         try {
@@ -62,8 +68,7 @@
       for (let i = 0; i < Number.MAX_SAFE_INTEGER; i++) {
         try {
           let cell = document.getElementById("coord" + i);
-          cell = cell.split(";")
-          result[i] = cell;
+          result[i] = cell.value;
         } catch (error) {
           return result;
         }
@@ -119,7 +124,7 @@
     }
 
     function checkForAnomal() {
-      let numbers = loadPolygonsFromCells();
+      let numbers = loadNumbersFromCells();
       n = numbers.length;
       k = getK(numbers.length);
 
@@ -153,14 +158,14 @@
 
       numericId = numericId.replace(/[^0-9]/g, "");
 
-      var numbers = loadPolygonsFromCells();
+      var numbers = loadNumbersFromCells();
       var coords = loadCoordsFromCells();
 
       coords.splice(numericId, 1)
       numbers.splice(numericId, 1);
 
       genTable(numbers.length);
-      fillTable(numbers);
+      fillTable(numbers,coords);
 
       storeNumbers(numbers);
       storePolygons(coords)
@@ -173,7 +178,7 @@
 
       numericId = numericId.replace(/[^0-9]/g, "");
 
-      var numbers = loadPolygonsFromCells();
+      var numbers = loadNumbersFromCells();
 
       numbers[numericId] = Number(
         document.getElementById("SredPloshad").value
@@ -190,7 +195,7 @@
 
       numericId = numericId.replace(/[^0-9]/g, "");
 
-      var numbers = loadPolygonsFromCells();
+      var numbers = loadNumbersFromCells();
 
       const maxClearNumber = Math.max(...checkForAnomal().clearNumbers);
 
@@ -207,7 +212,7 @@
 
       numericId = numericId.replace(/[^0-9]/g, "");
 
-      var numbers = loadPolygonsFromCells();
+      var numbers = loadNumbersFromCells();
 
       const newNumber = Math.floor(
         0.99 * (getK(numbers.length) * Otklonenie.value + +SredPloshad.value)
@@ -216,7 +221,7 @@
       numbers[numericId] = newNumber;
 
       genTable(numbers.length);
-      fillTable(numbers);
+      fillTable(numbers,getStoredPolygons());
       storeNumbers(numbers);
       findAnomaly();
     }
@@ -229,11 +234,11 @@
       for (var i = 0; i < valuesNumber; i++) {
         values[i] = getRandomInt(0, 100);
       }
-      fillTable(values);
+      fillTable(values,getStoredPolygons());
     }
 
     function canvDraw() {
-      var numbers = loadPolygonsFromCells();
+      var numbers = loadNumbersFromCells();
       const maxv = Math.max(...numbers);
 
       let max = getK(numbers.length) * Otklonenie.value + +SredPloshad.value;
@@ -334,7 +339,7 @@
     }
 
     function saveResults() {
-      let n = loadPolygonsFromCells().length;
+      let n = loadNumbersFromCells().length;
 
       let mysavedtext = "";
       for (let i = 0; i < n; i++) {
@@ -362,7 +367,7 @@
 
       if (textareaNumbers.length > 1) {
         genTable(textareaNumbers.length);
-        fillTable(textareaNumbers);
+        fillTable(textareaNumbers,getStoredPolygons());
         clearElement("#textarea");
         document.getElementById("textarea").value = "";
         findAnomaly();
@@ -375,18 +380,34 @@
       clearElement("#tableSpace");
     }
 
-    function fillTable(elements) {
+    function fillTable(elements, coords=getStoredPolygons()) {
+
       for (let i = 0; i < elements.length; i++) {
         currentCell = document.getElementById("square" + i);
         if (currentCell) {
           currentCell.value = elements[i];
         }
       }
+
+      for (let i = 0; i < coords.length; i++) {
+        currentCell = document.getElementById("coord" + i);
+        if (currentCell) {
+          currentCell.value = coords[i];
+        }
+      }
+
       storeNumbers(elements);
+      storePolygons(coords)
+
     }
 
     function findAnomaly() {
-      let numbers = loadPolygonsFromCells();
+      let numbers = loadNumbersFromCells();
+      storeNumbers(numbers)
+
+      let coords = loadCoordsFromCells();
+      storePolygons(coords)
+
       n = numbers.length;
       k = getK(numbers.length);
       koef.value = k;
@@ -441,18 +462,30 @@
       pic.src = 'map.jpg';
       canv.width = 600;
       canv.height = 300;
+      const mid = SredPloshad.value;
+
+
       pic.onload = function () {
         ctx.drawImage(pic, 0, 0, canv.width, canv.height);
-        let n = parseFloat(ChisloYchastkov.value);
-        for (let i = 1; i <= n; i++) {
+        let n = parseFloat(squaresNumber.value);
+        for (let i = 0; i <= n; i++) {
+
+
           sredX = 0;
           sredY = 0;
-          element1 = "ploshad" + i;
-          element2 = "koord" + i;
+          element1 = "square" + i;
+          element2 = "coord" + i;
           koord = document.getElementById(element2).value;
           koordmass = koord.split(";");
           ctx.beginPath();
-          ctx.fillStyle = "rgba(255, 255, 0, 0.7)";
+
+          let disp = mid + parseFloat(Otklonenie.value);
+
+          const number = document.getElementById(element1).value;
+          
+          const green = ( Math.abs(number - mid ) / parseFloat(Otklonenie.value) * 255 )
+          console.log(green)
+          ctx.fillStyle = `rgba(${green},255 , 0, 0.7)`;
           if ((document.getElementById(element1).value - SredPloshad.value) / Otklonenie.value >= koef.value) {
             ctx.fillStyle = "rgba(255, 0, 0, 0.7)";
           }
@@ -531,10 +564,10 @@
 <body onLoad="pageLoad()">
   <b>Количество лесных участков, подверженных болезни</b><br /><br />
   <input type="text" value="10" id="squaresNumber" />
-  <button onClick="squaresNumber.value=Number(squaresNumber.value)-1;genTable(squaresNumber.value);fillTable(getStoredNumbers())">
+  <button onClick="squaresNumber.value=Number(squaresNumber.value)-1;genTable(squaresNumber.value);fillTable(getStoredNumbers(),getStoredPolygons())">
     -
   </button>
-  <button onClick="squaresNumber.value=Number(squaresNumber.value)+1;genTable(squaresNumber.value);fillTable(getStoredNumbers())">
+  <button onClick="squaresNumber.value=Number(squaresNumber.value)+1;genTable(squaresNumber.value);fillTable(getStoredNumbers(),getStoredPolygons())">
     +
   </button>
   <button onClick="fillRandom();">Заполнить случайными данными</button>
