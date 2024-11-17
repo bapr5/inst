@@ -3,6 +3,24 @@
   <head>
     <link rel="stylesheet" href="style.css" />
     <script language="Javascript">
+      const defaultConfig = {
+        axes: true,
+        lines: true,
+        linesNames: true,
+        linesNumbers: true,
+        crosses: true,
+        crossesNumbers: true,
+      };
+
+      const configKeysToNames = {
+        axes: 'Оси',
+        lines: 'Линии',
+        linesNames: 'Названия линий',
+        linesNumbers: 'Значения линий',
+        crosses: 'Точки',
+        crossesNumbers: 'Значения точек',
+      };
+
       let params = location.search.substring(1).split("&");
 
       function getRandomInt(min, max) {
@@ -22,6 +40,37 @@
       function storePolygons(squaresList) {
         localStorage["polygons"] = JSON.stringify(squaresList);
       }
+      function getStoredPolygons() {
+        try {
+          return JSON.parse(localStorage["polygons"]);
+        } catch (error) {
+          alert("Куда делись полигоны?");
+          storePolygons([]);
+        }
+      }
+
+      /* 
+ожидает конфиг типа 
+{
+axes:true|false,
+lines:true|false,
+linesNames:true|false,
+linesNumbers:true|false,
+crosses:true|false,
+crossesNumbers:true|false,
+}
+*/
+      function storeConfig(config) {
+        localStorage["graphConfig"] = JSON.stringify(config);
+      }
+
+      function getStoredConfig() {
+        try {
+          return JSON.parse(localStorage["graphConfig"]);
+        } catch (error) {
+          return null;
+        }
+      }
 
       function getStoredPolygons() {
         try {
@@ -35,6 +84,11 @@
       function pageLoad() {
         const paramsLength = params.length;
         const storedLength = getStoredNumbers().length;
+
+        if (!getStoredConfig()) {
+          console.log("Initialized config.");
+          storeConfig(defaultConfig);
+        }
 
         if (paramsLength > 1) {
           genTable(paramsLength);
@@ -227,6 +281,42 @@
         }
         fillTable(values, getStoredPolygons());
       }
+
+      function createCheckboxForm(config = getStoredConfig()) {
+        const form = document.createElement("form");
+        form.id = "checkboxForm";
+        from.action = "javascript:setConfig()"
+
+        for (const key in config) {
+          if (config.hasOwnProperty(key)) {
+            const wrapper = document.createElement("div");
+            wrapper.style.marginBottom = "10px";
+
+            const checkbox = document.createElement("input");
+            checkbox.type = "checkbox";
+            checkbox.id = key;
+            checkbox.name = key;
+            checkbox.checked = config[key];
+            checkbox.onchange(this.form.submit)
+
+            const label = document.createElement("label");
+            label.htmlFor = key;
+            label.textContent = configKeysToNames[key];
+
+            wrapper.appendChild(checkbox);
+            wrapper.appendChild(label);
+
+            form.appendChild(wrapper);
+          }
+        }
+
+        document.body.appendChild(form);
+      }
+
+      function setConfig(){
+
+      }
+      function loadConfigFromCells(){}
 
       function canvDraw() {
         var numbers = loadNumbersFromCells();
@@ -481,6 +571,7 @@
       function genTable(rowsCount) {
         clearTable();
 
+        createCheckboxForm(getStoredConfig());
         const tableSpace = document.getElementById("tableSpace");
         console.log("got rCount:", rowsCount);
 
