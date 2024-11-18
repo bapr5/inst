@@ -334,7 +334,7 @@ crossesNumbers:true|false,
       canvDraw();
     }
 
-    function canvDraw() {
+    function canvDraw(focusedSquare = undefined) {
       var numbers = loadNumbersFromCells();
       const maxv = Math.max(...numbers);
       const config = getStoredConfig()
@@ -373,7 +373,10 @@ crossesNumbers:true|false,
       for (let i = 0; i < n; i++) {
         const j = (i + 1 - numbers.length / 2) * 7.5;
         coord = numbers[i];
-        if (coord > max) {
+        if(i == focusedSquare){
+          drawCross(ctx, coord, "blue", j, maxv);
+        }
+        else if (coord > max || coord < min) {
           drawCross(ctx, coord, "red", j, maxv);
         } else {
           drawCross(ctx, coord, "black", j, maxv);
@@ -540,7 +543,7 @@ crossesNumbers:true|false,
       for (let i = 0; i < n; i++) {
         let element = "square" + i;
         clearField(element);
-        if ((document.getElementById(element).value - SredPloshad.value) / Otklonenie.value >= k) {
+        if( ((document.getElementById(element).value - SredPloshad.value) / Otklonenie.value >= k ) || (-(document.getElementById(element).value - SredPloshad.value) / Otklonenie.value >= k ) ){
           const cell = document.getElementById(element);
           cell.style.background = "red";
           cell.classList.add("anomal");
@@ -587,7 +590,7 @@ crossesNumbers:true|false,
 
           if (i == focusedPoly) {
             ctx.fillStyle = "rgba(0, 0, 255, 0.8)";
-          } else if ((document.getElementById(element1).value - SredPloshad.value) / Otklonenie.value >= koef.value) {
+          } else if (( (document.getElementById(element1).value - SredPloshad.value) / Otklonenie.value >= koef.value ) || -(document.getElementById(element1).value - SredPloshad.value) / Otklonenie.value >=koef.value) {
             ctx.fillStyle = "rgba(255, 0, 0, 0.7)";
           } else {
             ctx.fillStyle = `rgba(${green},255 , 0, 0.7)`;
@@ -635,9 +638,9 @@ crossesNumbers:true|false,
         let cell1 = row.insertCell(0);
         cell1.innerHTML = "Участок " + Number(i + 1);
         let cell2 = row.insertCell(1);
-        cell2.innerHTML = "<input type='text' id='square" + i + "' value='' onBlur='drawPolygons();' onClick='drawPolygons(" + i + ");'>";
+        cell2.innerHTML = "<input type='text' id='square" + i + "' value='' onBlur='drawPolygons();canvDraw();' onClick='drawPolygons(" + i + ");canvDraw("+i+");'>";
         let cell3 = row.insertCell(2);
-        cell3.innerHTML = "<input type='text' id='coord" + i + "' value='' onBlur='drawPolygons();' onClick='drawPolygons(" + i + ");'>";
+        cell3.innerHTML = "<input type='text' id='coord" + i + "' value='' onBlur='drawPolygons();canvDraw()' onClick='drawPolygons(" + i + ");canvDraw("+i+");'>";
       }
       tableSpace.appendChild(table);
 
