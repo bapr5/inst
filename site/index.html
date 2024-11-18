@@ -471,15 +471,13 @@ crossesNumbers:true|false,
         document.write('<a href="data:text/plain;charset=utf-8,%EF%BB%BF' + encodeURIComponent(mysavedtext) + '" download="значения.txt">значения.txt</a>');
       }
 
-      function initializeTable() {
-        // const textareaNumbers = document.getElementById("textarea").value.split(/$\s*/m);
-        
+      function initializeTable() {        
         const textareaStrings = document.getElementById("textarea").value.split('\n');
         const squaresNumber = Number(document.getElementById("squaresNumber").value);
 
         clearTable();
 
-        if (textareaStrings.length > 0) {
+        if (textareaStrings.length > 1) {
           let numbersForTable = []
           let polygonsForTable = []
           genTable(textareaStrings.length);
@@ -488,6 +486,8 @@ crossesNumbers:true|false,
             numbersForTable.push(stringArray[0])
             polygonsForTable.push(stringArray.slice(1).join(';'))
           }
+          if(numbersForTable.length != polygonsForTable.length){alert("Количество площадей и наборов координат разное! Проверьте входные данные")}
+
           fillTable(numbersForTable, polygonsForTable);
           clearElement("#textarea");
           document.getElementById("textarea").value = "";
