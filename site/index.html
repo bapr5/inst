@@ -379,7 +379,7 @@ crossesNumbers:true|false,
           coord = numbers[i];
           if (i == focusedSquare) {
             drawCross(ctx, coord, "blue", j, maxv);
-          } else if (coord > max || coord < min) {
+          } else if ((coord > max) || ( coord < min)) {
             drawCross(ctx, coord, "red", j, maxv);
           } else {
             drawCross(ctx, coord, "black", j, maxv);
