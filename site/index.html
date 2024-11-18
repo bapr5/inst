@@ -382,12 +382,14 @@ crossesNumbers:true|false,
 
       if (config.linesNames) {
         ctx.fillText("Аномал", (570.5 * max) / maxv, 10);
+        ctx.fillText("Аномал", (570.5 * min) / maxv, 10);
         ctx.fillText("Сред", (570.5 * mid) / maxv, 10);
         ctx.fillText("Откл", (570.5 * dispLeft) / maxv, 10);
         ctx.fillText("Откл", (570.5 * disp) / maxv, 10);
       }
 
       if (config.linesNumbers) {
+        ctx.fillText(min.toFixed(2), (570.5 * min) / maxv, 20);
         ctx.fillText(max.toFixed(2), (570.5 * max) / maxv, 20);
         ctx.fillText(mid.toFixed(2), (570.5 * mid) / maxv, 20);
         ctx.fillText(dispLeft.toFixed(2), (570.5 * dispLeft) / maxv, 20);
