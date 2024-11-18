@@ -38,7 +38,6 @@
         try {
           return JSON.parse(localStorage["polygons"]);
         } catch (error) {
-          alert("Куда делись полигоны?");
           storePolygons([]);
         }
       }
@@ -70,7 +69,6 @@ crossesNumbers:true|false,
         try {
           return JSON.parse(localStorage["polygons"]);
         } catch (error) {
-          alert("Куда делись полигоны?");
           storePolygons([]);
         }
       }
@@ -95,8 +93,17 @@ crossesNumbers:true|false,
           fillTable(getStoredNumbers());
           squaresNumber.value = storedLength;
         }
+        initializeElementsState();
       }
+      function initializeElementsState(config = getStoredConfig()) {
+        let textarea = document.getElementById("textarea");
+        let map = document.getElementById("canv2");
+        let graph = document.getElementById("canv");
 
+        textarea.style.display = config.textbox ? "unset" : "none";
+        map.style.display = config.map ? "unset" : "none";
+        graph.style.display = config.graph ? "unset" : "none";
+      }
       function loadNumbersFromCells() {
         let result = [];
         for (let i = 0; i < Number.MAX_SAFE_INTEGER; i++) {
@@ -325,24 +332,33 @@ crossesNumbers:true|false,
             newConfig[key] = defaultConfig[key];
           }
         }
-
         storeConfig(newConfig);
         findAnomaly();
         canvDraw();
+
+        console.log("ncfg", newConfig);
+        let textarea = document.getElementById("textarea");
+        if (!newConfig.textbox) {
+          textarea.style.display = "none";
+        } else {
+          textarea.style.display = "unset";
+        }
       }
 
-      function canvDraw(focusedSquare = undefined) {
+      function canvDraw(focusedSquare = undefined, focusedLine = undefined) {
+        console.log(focusedSquare, focusedLine);
         const config = getStoredConfig();
         if (!config.graph) {
           let canv = document.getElementById("canv");
           if (canv) {
-            canv.style.visibility = "hidden";
+            canv.style.display = "none";
             return;
           }
         }
 
-        if (canv.style.visibility == "hidden") {
-          canv.style.visibility == "visible";
+        let canv = document.getElementById("canv");
+        if (canv.style.display == "none") {
+          canv.style.display = "unset";
         }
 
         var numbers = loadNumbersFromCells();
@@ -353,7 +369,6 @@ crossesNumbers:true|false,
         let mid = parseFloat(SredPloshad.value);
         let disp = mid + parseFloat(Otklonenie.value);
         let dispLeft = mid - parseFloat(Otklonenie.value);
-        let canv = document.getElementById("canv");
         let ctx = canv.getContext("2d");
         let koord;
         canv.width = 600;
@@ -417,6 +432,7 @@ crossesNumbers:true|false,
 
         ctx.beginPath();
         ctx.strokeStyle = "green";
+        ctx.lineWidth = focusedLine == "green" ? 3 : 1;
         ctx.moveTo(5.5 + (570.5 * mid) / maxv, 5.5);
         ctx.lineTo(5.5 + (570.5 * mid) / maxv, 280.5);
         ctx.stroke();
@@ -424,6 +440,7 @@ crossesNumbers:true|false,
 
         ctx.beginPath();
         ctx.strokeStyle = "yellow";
+        ctx.lineWidth = focusedLine == "yellow" ? 3 : 1;
         ctx.moveTo(5.5 + (570.5 * disp) / maxv, 5.5);
         ctx.lineTo(5.5 + (570.5 * disp) / maxv, 280.5);
         ctx.stroke();
@@ -431,6 +448,7 @@ crossesNumbers:true|false,
 
         ctx.beginPath();
         ctx.strokeStyle = "yellow";
+        ctx.lineWidth = focusedLine == "yellow" ? 3 : 1;
         ctx.moveTo(5.5 + (570.5 * dispLeft) / maxv, 5.5);
         ctx.lineTo(5.5 + (570.5 * dispLeft) / maxv, 280.5);
         ctx.stroke();
@@ -523,10 +541,19 @@ crossesNumbers:true|false,
 
       function findAnomaly() {
         let numbers = loadNumbersFromCells();
-        storeNumbers(numbers);
-
         let coords = loadCoordsFromCells();
+
+        let sortedArray = numbers.map((value, index) => [value, coords[index]]);
+
+        sortedArray.sort((a, b) => a[0] - b[0]);
+
+        numbers = sortedArray.map((pair) => pair[0]);
+        coords = sortedArray.map((pair) => pair[1]);
+
+        storeNumbers(numbers);
         storePolygons(coords);
+
+        fillTable(numbers,coords)
 
         n = numbers.length;
         k = getK(numbers.length);
@@ -565,8 +592,16 @@ crossesNumbers:true|false,
       }
 
       function drawPolygons(focusedPoly = undefined) {
-        console.log(focusedPoly);
         let canv = document.getElementById("canv2");
+
+        const config = getStoredConfig();
+
+        if (!config.map) {
+          canv.style.display = "none";
+        } else {
+          canv.style.display = "unset";
+        }
+
         let ctx = canv.getContext("2d");
         canv.width = 600;
         canv.height = 300;
@@ -599,10 +634,7 @@ crossesNumbers:true|false,
 
             if (i == focusedPoly) {
               ctx.fillStyle = "rgba(0, 0, 255, 0.8)";
-            } else if (
-              (document.getElementById(element1).value - SredPloshad.value) / Otklonenie.value >= koef.value ||
-              -(document.getElementById(element1).value - SredPloshad.value) / Otklonenie.value >= koef.value
-            ) {
+            } else if ((document.getElementById(element1).value - SredPloshad.value) / Otklonenie.value >= koef.value || -(document.getElementById(element1).value - SredPloshad.value) / Otklonenie.value >= koef.value) {
               ctx.fillStyle = "rgba(255, 0, 0, 0.7)";
             } else {
               ctx.fillStyle = `rgba(${green},255 , 0, 0.7)`;
@@ -650,16 +682,16 @@ crossesNumbers:true|false,
           let cell1 = row.insertCell(0);
           cell1.innerHTML = "Участок " + Number(i + 1);
           let cell2 = row.insertCell(1);
-          cell2.innerHTML = "<input type='text' id='square" + i + "' value='' onBlur='drawPolygons();canvDraw();' onClick='drawPolygons(" + i + ");canvDraw(" + i + ");'>";
+          cell2.innerHTML = "<input type='text' id='square" + i + "' value='' onBlur='drawPolygons();canvDraw();' onClick='drawPolygons(" + i + ");canvDraw(focusedSquare=" + i + ");'>";
           let cell3 = row.insertCell(2);
-          cell3.innerHTML = "<input type='text' id='coord" + i + "' value='' onBlur='drawPolygons();canvDraw()' onClick='drawPolygons(" + i + ");canvDraw(" + i + ");'>";
+          cell3.innerHTML = "<input type='text' id='coord" + i + "' value='' onBlur='drawPolygons();canvDraw()' onClick='drawPolygons(" + i + ");canvDraw(focusedSquare=" + i + ");'>";
         }
         tableSpace.appendChild(table);
 
         tableSpace.innerHTML = tableSpace.innerHTML + "<hr><input type=button value='Поиск аномальных значений' onClick='findAnomaly()' id='Button2'><br>";
-        tableSpace.innerHTML = tableSpace.innerHTML + "Средняя площадь повреждённой территории: <input type=text id='SredPloshad'><br>";
+        tableSpace.innerHTML = tableSpace.innerHTML + "Средняя площадь повреждённой территории: <input type=text id='SredPloshad' onBlur='canvDraw();' onClick='canvDraw(undefined,\"green\");'><br>";
         tableSpace.innerHTML = tableSpace.innerHTML + "Общая площадь повреждённой территории: <input type=text id='SumPloshad'><br>";
-        tableSpace.innerHTML = tableSpace.innerHTML + "Среднеквадратическое отклонение: <input type=text id='Otklonenie'><br>";
+        tableSpace.innerHTML = tableSpace.innerHTML + "Среднеквадратическое отклонение: <input type=text id='Otklonenie' onBlur='canvDraw();' onClick='canvDraw(undefined,\"yellow\");'><br>";
         tableSpace.innerHTML = tableSpace.innerHTML + "Коэффициент: <input type=text id='koef'><br>";
       }
     </script>
