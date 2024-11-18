@@ -340,6 +340,7 @@ crossesNumbers:true|false,
       const config = getStoredConfig()
 
       let max = getK(numbers.length) * Otklonenie.value + +SredPloshad.value;
+      let min = - (getK(numbers.length) * Otklonenie.value) + +SredPloshad.value;
       let mid = parseFloat(SredPloshad.value);
       let disp = mid + parseFloat(Otklonenie.value);
       let dispLeft = mid - parseFloat(Otklonenie.value);
@@ -397,6 +398,13 @@ crossesNumbers:true|false,
         ctx.strokeStyle = "red";
         ctx.moveTo(5.5 + (570.5 * max) / maxv, 5.5);
         ctx.lineTo(5.5 + (570.5 * max) / maxv, 280.5);
+        ctx.stroke();
+        ctx.closePath();
+
+        ctx.beginPath();
+        ctx.strokeStyle = "red";
+        ctx.moveTo(5.5 + (570.5 * min) / maxv, 5.5);
+        ctx.lineTo(5.5 + (570.5 * min) / maxv, 280.5);
         ctx.stroke();
         ctx.closePath();
 
