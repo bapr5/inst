@@ -3,22 +3,16 @@
   <head>
     <link rel="stylesheet" href="style.css" />
     <script language="Javascript">
-      const defaultConfig = {
-        axes: true,
-        lines: true,
-        linesNames: true,
-        linesNumbers: true,
-        crosses: true,
-        crossesNumbers: true,
+      const configKeysToNames = {
+        graph: "График",
+        map: "Карта",
+        textbox: "Область для вставки значений",
       };
 
-      const configKeysToNames = {
-        axes: "Оси",
-        lines: "Линии",
-        linesNames: "Названия линий",
-        linesNumbers: "Значения линий",
-        crosses: "Точки",
-        crossesNumbers: "Значения точек",
+      const defaultConfig = {
+        graph: true,
+        map: true,
+        textbox: true,
       };
 
       let params = location.search.substring(1).split("&");
@@ -61,12 +55,12 @@ crossesNumbers:true|false,
 }
 */
       function storeConfig(config) {
-        localStorage["graphConfig"] = JSON.stringify(config);
+        localStorage["appConfig"] = JSON.stringify(config);
       }
 
       function getStoredConfig() {
         try {
-          return JSON.parse(localStorage["graphConfig"]);
+          return JSON.parse(localStorage["appConfig"]);
         } catch (error) {
           return null;
         }
@@ -285,8 +279,7 @@ crossesNumbers:true|false,
       function genCheckboxes(config = getStoredConfig()) {
         const prevCheckboxes = document.getElementById("checkboxForm");
         if (prevCheckboxes) {
-          console.log("gp");
-          prevCheckboxes.remove();
+          clearElement("#checkboxForm");
         }
 
         const form = document.createElement("form");
@@ -318,7 +311,7 @@ crossesNumbers:true|false,
           }
         }
 
-        document.body.appendChild(form);
+        document.body.prepend(form);
       }
 
       // this one just uses array of ids to search for checkboxes wit their id. it sucks so much i cant believe this is real
@@ -339,9 +332,21 @@ crossesNumbers:true|false,
       }
 
       function canvDraw(focusedSquare = undefined) {
+        const config = getStoredConfig();
+        if (!config.graph) {
+          let canv = document.getElementById("canv");
+          if (canv) {
+            canv.style.visibility = "hidden";
+            return;
+          }
+        }
+
+        if (canv.style.visibility == "hidden") {
+          canv.style.visibility == "visible";
+        }
+
         var numbers = loadNumbersFromCells();
         const maxv = Math.max(...numbers);
-        const config = getStoredConfig();
 
         let max = getK(numbers.length) * Otklonenie.value + +SredPloshad.value;
         let min = -(getK(numbers.length) * Otklonenie.value) + +SredPloshad.value;
@@ -357,20 +362,18 @@ crossesNumbers:true|false,
 
         ctx.lineWidth = 1;
 
-        if (config.axes) {
-          ctx.moveTo(5.5, 5.5);
-          ctx.lineTo(3.5, 15.5);
-          ctx.moveTo(5.5, 5.5);
-          ctx.lineTo(7.5, 15.5);
-          ctx.moveTo(5.5, 5.5);
-          ctx.lineTo(5.5, 280.5);
-          ctx.lineTo(590.5, 280.5);
-          ctx.lineTo(580.5, 278.5);
-          ctx.moveTo(590.5, 280.5);
-          ctx.lineTo(580.5, 282.5);
-          ctx.closePath();
-          ctx.stroke();
-        }
+        ctx.moveTo(5.5, 5.5);
+        ctx.lineTo(3.5, 15.5);
+        ctx.moveTo(5.5, 5.5);
+        ctx.lineTo(7.5, 15.5);
+        ctx.moveTo(5.5, 5.5);
+        ctx.lineTo(5.5, 280.5);
+        ctx.lineTo(590.5, 280.5);
+        ctx.lineTo(580.5, 278.5);
+        ctx.moveTo(590.5, 280.5);
+        ctx.lineTo(580.5, 282.5);
+        ctx.closePath();
+        ctx.stroke();
 
         let n = numbers.length;
 
@@ -386,75 +389,69 @@ crossesNumbers:true|false,
           }
         }
 
-        if (config.linesNames) {
-          ctx.fillText("Аномал", (570.5 * max) / maxv, 10);
-          ctx.fillText("Аномал", (570.5 * min) / maxv, 10);
-          ctx.fillText("Сред", (570.5 * mid) / maxv, 10);
-          ctx.fillText("Откл", (570.5 * dispLeft) / maxv, 10);
-          ctx.fillText("Откл", (570.5 * disp) / maxv, 10);
-        }
+        ctx.fillText("Аномал", (570.5 * max) / maxv, 10);
+        ctx.fillText("Аномал", (570.5 * min) / maxv, 10);
+        ctx.fillText("Сред", (570.5 * mid) / maxv, 10);
+        ctx.fillText("Откл", (570.5 * dispLeft) / maxv, 10);
+        ctx.fillText("Откл", (570.5 * disp) / maxv, 10);
 
-        if (config.linesNumbers) {
-          ctx.fillText(min.toFixed(2), (570.5 * min) / maxv, 20);
-          ctx.fillText(max.toFixed(2), (570.5 * max) / maxv, 20);
-          ctx.fillText(mid.toFixed(2), (570.5 * mid) / maxv, 20);
-          ctx.fillText(dispLeft.toFixed(2), (570.5 * dispLeft) / maxv, 20);
-          ctx.fillText(disp.toFixed(2), (570.5 * disp) / maxv, 20);
-        }
-        if (config.lines) {
-          ctx.beginPath();
-          ctx.strokeStyle = "red";
-          ctx.moveTo(5.5 + (570.5 * max) / maxv, 5.5);
-          ctx.lineTo(5.5 + (570.5 * max) / maxv, 280.5);
-          ctx.stroke();
-          ctx.closePath();
+        ctx.fillText(min.toFixed(2), (570.5 * min) / maxv, 20);
+        ctx.fillText(max.toFixed(2), (570.5 * max) / maxv, 20);
+        ctx.fillText(mid.toFixed(2), (570.5 * mid) / maxv, 20);
+        ctx.fillText(dispLeft.toFixed(2), (570.5 * dispLeft) / maxv, 20);
+        ctx.fillText(disp.toFixed(2), (570.5 * disp) / maxv, 20);
 
-          ctx.beginPath();
-          ctx.strokeStyle = "red";
-          ctx.moveTo(5.5 + (570.5 * min) / maxv, 5.5);
-          ctx.lineTo(5.5 + (570.5 * min) / maxv, 280.5);
-          ctx.stroke();
-          ctx.closePath();
+        ctx.beginPath();
+        ctx.strokeStyle = "red";
+        ctx.moveTo(5.5 + (570.5 * max) / maxv, 5.5);
+        ctx.lineTo(5.5 + (570.5 * max) / maxv, 280.5);
+        ctx.stroke();
+        ctx.closePath();
 
-          ctx.beginPath();
-          ctx.strokeStyle = "green";
-          ctx.moveTo(5.5 + (570.5 * mid) / maxv, 5.5);
-          ctx.lineTo(5.5 + (570.5 * mid) / maxv, 280.5);
-          ctx.stroke();
-          ctx.closePath();
+        ctx.beginPath();
+        ctx.strokeStyle = "red";
+        ctx.moveTo(5.5 + (570.5 * min) / maxv, 5.5);
+        ctx.lineTo(5.5 + (570.5 * min) / maxv, 280.5);
+        ctx.stroke();
+        ctx.closePath();
 
-          ctx.beginPath();
-          ctx.strokeStyle = "yellow";
-          ctx.moveTo(5.5 + (570.5 * disp) / maxv, 5.5);
-          ctx.lineTo(5.5 + (570.5 * disp) / maxv, 280.5);
-          ctx.stroke();
-          ctx.closePath();
+        ctx.beginPath();
+        ctx.strokeStyle = "green";
+        ctx.moveTo(5.5 + (570.5 * mid) / maxv, 5.5);
+        ctx.lineTo(5.5 + (570.5 * mid) / maxv, 280.5);
+        ctx.stroke();
+        ctx.closePath();
 
-          ctx.beginPath();
-          ctx.strokeStyle = "yellow";
-          ctx.moveTo(5.5 + (570.5 * dispLeft) / maxv, 5.5);
-          ctx.lineTo(5.5 + (570.5 * dispLeft) / maxv, 280.5);
-          ctx.stroke();
-          ctx.closePath();
-        }
+        ctx.beginPath();
+        ctx.strokeStyle = "yellow";
+        ctx.moveTo(5.5 + (570.5 * disp) / maxv, 5.5);
+        ctx.lineTo(5.5 + (570.5 * disp) / maxv, 280.5);
+        ctx.stroke();
+        ctx.closePath();
+
+        ctx.beginPath();
+        ctx.strokeStyle = "yellow";
+        ctx.moveTo(5.5 + (570.5 * dispLeft) / maxv, 5.5);
+        ctx.lineTo(5.5 + (570.5 * dispLeft) / maxv, 280.5);
+        ctx.stroke();
+        ctx.closePath();
 
         function drawCross(ctx, coord, style = "black", j, maxv) {
           const config = getStoredConfig();
 
           ctx.beginPath();
-          if (config.crosses) {
-            ctx.strokeStyle = style;
-            ctx.moveTo(5.5 + (570.5 * coord) / maxv - 3, 152.5 + j);
-            ctx.lineTo(5.5 + (570.5 * coord) / maxv + 3, 146.5 + j);
-            ctx.stroke();
 
-            ctx.moveTo(5.5 + (570.5 * coord) / maxv + 3, 152.5 + j);
-            ctx.lineTo(5.5 + (570.5 * coord) / maxv - 3, 146.5 + j);
-            ctx.stroke();
-          }
-          if (config.crossesNumbers) {
-            ctx.fillText(Math.round(coord), 5.5 + (570.5 * coord) / maxv - 5, 295.5);
-          }
+          ctx.strokeStyle = style;
+          ctx.moveTo(5.5 + (570.5 * coord) / maxv - 3, 152.5 + j);
+          ctx.lineTo(5.5 + (570.5 * coord) / maxv + 3, 146.5 + j);
+          ctx.stroke();
+
+          ctx.moveTo(5.5 + (570.5 * coord) / maxv + 3, 152.5 + j);
+          ctx.lineTo(5.5 + (570.5 * coord) / maxv - 3, 146.5 + j);
+          ctx.stroke();
+
+          ctx.fillText(Math.round(coord), 5.5 + (570.5 * coord) / maxv - 5, 295.5);
+
           ctx.closePath();
         }
       }
