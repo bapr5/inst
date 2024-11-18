@@ -284,7 +284,8 @@ crossesNumbers:true|false,
     }
 
     function genCheckboxes(config = getStoredConfig()) {
-      clearElement("#checkboxForm");
+      const prevCheckboxes = document.getElementById("clearElementheckboxForm");
+      if (prevCheckboxes) { console.log('gp');prevCheckboxes.remove()};
 
       const form = document.createElement("form");
       form.id = "checkboxForm";
@@ -329,6 +330,7 @@ crossesNumbers:true|false,
       }
 
       storeConfig(newConfig);
+      findAnomaly()
       canvDraw();
     }
 
@@ -600,7 +602,7 @@ crossesNumbers:true|false,
 
     function genTable(rowsCount) {
       clearTable();
-
+      clearElement("#checkboxForm");
       genCheckboxes(getStoredConfig());
       const tableSpace = document.getElementById("tableSpace");
       console.log("got rCount:", rowsCount);
