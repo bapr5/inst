@@ -1,55 +1,56 @@
 <!DOCTYPE html>
 <html lang="en">
-  <head>
-    <link rel="stylesheet" href="style.css" />
-    <script language="Javascript">
-      const defaultConfig = {
-        axes: true,
-        lines: true,
-        linesNames: true,
-        linesNumbers: true,
-        crosses: true,
-        crossesNumbers: true,
-      };
 
-      const configKeysToNames = {
-        axes: "Оси",
-        lines: "Линии",
-        linesNames: "Названия линий",
-        linesNumbers: "Значения линий",
-        crosses: "Точки",
-        crossesNumbers: "Значения точек",
-      };
+<head>
+  <link rel="stylesheet" href="style.css" />
+  <script language="Javascript">
+    const defaultConfig = {
+      axes: true,
+      lines: true,
+      linesNames: true,
+      linesNumbers: true,
+      crosses: true,
+      crossesNumbers: true,
+    };
 
-      let params = location.search.substring(1).split("&");
+    const configKeysToNames = {
+      axes: "Оси",
+      lines: "Линии",
+      linesNames: "Названия линий",
+      linesNumbers: "Значения линий",
+      crosses: "Точки",
+      crossesNumbers: "Значения точек",
+    };
 
-      function getRandomInt(min, max) {
-        const minCeiled = Math.ceil(min);
-        const maxFloored = Math.floor(max);
-        return Math.floor(Math.random() * (maxFloored - minCeiled) + minCeiled);
+    let params = location.search.substring(1).split("&");
+
+    function getRandomInt(min, max) {
+      const minCeiled = Math.ceil(min);
+      const maxFloored = Math.floor(max);
+      return Math.floor(Math.random() * (maxFloored - minCeiled) + minCeiled);
+    }
+
+    function storeNumbers(squaresList) {
+      localStorage["squares"] = JSON.stringify(squaresList);
+    }
+
+    function getStoredNumbers() {
+      return JSON.parse(localStorage["squares"]);
+    }
+
+    function storePolygons(squaresList) {
+      localStorage["polygons"] = JSON.stringify(squaresList);
+    }
+    function getStoredPolygons() {
+      try {
+        return JSON.parse(localStorage["polygons"]);
+      } catch (error) {
+        alert("Куда делись полигоны?");
+        storePolygons([]);
       }
+    }
 
-      function storeNumbers(squaresList) {
-        localStorage["squares"] = JSON.stringify(squaresList);
-      }
-
-      function getStoredNumbers() {
-        return JSON.parse(localStorage["squares"]);
-      }
-
-      function storePolygons(squaresList) {
-        localStorage["polygons"] = JSON.stringify(squaresList);
-      }
-      function getStoredPolygons() {
-        try {
-          return JSON.parse(localStorage["polygons"]);
-        } catch (error) {
-          alert("Куда делись полигоны?");
-          storePolygons([]);
-        }
-      }
-
-      /* 
+    /* 
 ожидает конфиг типа 
 {
 axes:true|false,
@@ -60,631 +61,661 @@ crosses:true|false,
 crossesNumbers:true|false,
 }
 */
-      function storeConfig(config) {
-        localStorage["graphConfig"] = JSON.stringify(config);
+    function storeConfig(config) {
+      localStorage["graphConfig"] = JSON.stringify(config);
+    }
+
+    function getStoredConfig() {
+      try {
+        return JSON.parse(localStorage["graphConfig"]);
+      } catch (error) {
+        return null;
+      }
+    }
+
+    function getStoredPolygons() {
+      try {
+        return JSON.parse(localStorage["polygons"]);
+      } catch (error) {
+        alert("Куда делись полигоны?");
+        storePolygons([]);
+      }
+    }
+
+    function pageLoad() {
+      const paramsLength = params.length;
+      const storedLength = getStoredNumbers().length;
+
+      if (!getStoredConfig()) {
+        console.log("Initialized config.");
+        storeConfig(defaultConfig);
       }
 
-      function getStoredConfig() {
+      if (paramsLength > 1) {
+        genTable(paramsLength);
+        squaresNumber.value = paramsLength;
+        storeNumbers(params);
+        fillTable(params);
+        findAnomaly();
+      } else if (storedLength) {
+        genTable(storedLength);
+        fillTable(getStoredNumbers());
+        squaresNumber.value = storedLength;
+      }
+    }
+
+    function loadNumbersFromCells() {
+      let result = [];
+      for (let i = 0; i < Number.MAX_SAFE_INTEGER; i++) {
         try {
-          return JSON.parse(localStorage["graphConfig"]);
+          let cell = document.getElementById("square" + i);
+          result[i] = cell.value;
         } catch (error) {
-          return null;
+          return result;
         }
       }
+    }
 
-      function getStoredPolygons() {
+    function loadCoordsFromCells() {
+      let result = [];
+      for (let i = 0; i < Number.MAX_SAFE_INTEGER; i++) {
         try {
-          return JSON.parse(localStorage["polygons"]);
+          let cell = document.getElementById("coord" + i);
+          result[i] = cell.value;
         } catch (error) {
-          alert("Куда делись полигоны?");
-          storePolygons([]);
+          return result;
         }
       }
+    }
 
-      function pageLoad() {
-        const paramsLength = params.length;
-        const storedLength = getStoredNumbers().length;
-
-        if (!getStoredConfig()) {
-          console.log("Initialized config.");
-          storeConfig(defaultConfig);
-        }
-
-        if (paramsLength > 1) {
-          genTable(paramsLength);
-          squaresNumber.value = paramsLength;
-          storeNumbers(params);
-          fillTable(params);
-          findAnomaly();
-        } else if (storedLength) {
-          genTable(storedLength);
-          fillTable(getStoredNumbers());
-          squaresNumber.value = storedLength;
-        }
+    function getK(n) {
+      if (n <= 5) {
+        return 1.791;
+      } else if (5 < n < 10) {
+        return 2.146;
+      } else if (15 < n < 20) {
+        return 2.447;
+      } else if (20 < n < 25) {
+        return 2.537;
+      } else if (25 < n) {
+        return 2.633;
+      } else {
+        return 2.146;
       }
+    }
 
-      function loadNumbersFromCells() {
-        let result = [];
-        for (let i = 0; i < Number.MAX_SAFE_INTEGER; i++) {
-          try {
-            let cell = document.getElementById("square" + i);
-            result[i] = cell.value;
-          } catch (error) {
-            return result;
-          }
-        }
+    function insertContextCell(cell) {
+      const id = cell.id;
+      const contextCell = cell.parentNode.parentNode.insertCell();
+      if (!document.getElementById("contextCell")) {
+        contextCell.innerHTML = `<div id="contextCell"><input type="button" value="-" onclick="this.parentNode.remove();anomalHide(${id});" id="Button3"><input type="button" value="mid" onclick="this.parentNode.remove();anomalMid(${id});" id="Button4">  <input type="button" value="max" onclick="this.parentNode.remove();anomalMax(${id});" id="Button5"> <input type="button" value="maxA" onclick="this.parentNode.remove();anomalMaxCalc(${id})" id="Button6">`;
       }
+    }
 
-      function loadCoordsFromCells() {
-        let result = [];
-        for (let i = 0; i < Number.MAX_SAFE_INTEGER; i++) {
-          try {
-            let cell = document.getElementById("coord" + i);
-            result[i] = cell.value;
-          } catch (error) {
-            return result;
-          }
-        }
+    function clearElement(id) {
+      const elem = document.querySelector(id);
+      if (elem) {
+        elem.textContent = "";
       }
+    }
 
-      function getK(n) {
-        if (n <= 5) {
-          return 1.791;
-        } else if (5 < n < 10) {
-          return 2.146;
-        } else if (15 < n < 20) {
-          return 2.447;
-        } else if (20 < n < 25) {
-          return 2.537;
-        } else if (25 < n) {
-          return 2.633;
-        } else {
-          return 2.146;
-        }
-      }
+    function clearField(fieldName) {
+      document.getElementById(fieldName).style.background = "white";
+    }
 
-      function insertContextCell(cell) {
-        const id = cell.id;
-        const contextCell = cell.parentNode.parentNode.insertCell();
-        if (!document.getElementById("contextCell")) {
-          contextCell.innerHTML = `<div id="contextCell"><input type="button" value="-" onclick="this.parentNode.remove();anomalHide(${id});" id="Button3"><input type="button" value="mid" onclick="this.parentNode.remove();anomalMid(${id});" id="Button4">  <input type="button" value="max" onclick="this.parentNode.remove();anomalMax(${id});" id="Button5"> <input type="button" value="maxA" onclick="this.parentNode.remove();anomalMaxCalc(${id})" id="Button6">`;
-        }
-      }
-
-      function clearElement(id) {
-        const elem = document.querySelector(id);
-        if (elem) {
-          elem.textContent = "";
-        }
-      }
-
-      function clearField(fieldName) {
-        document.getElementById(fieldName).style.background = "white";
-      }
-
-      function preSaveCheck() {
-        if (checkForAnomal().anomalFound) {
-          userConfirmation = confirm("В данных все еще могут быть аномальные значения. Точно сохранить?");
-          if (userConfirmation) {
-            saveResults();
-          }
-        } else {
+    function preSaveCheck() {
+      if (checkForAnomal().anomalFound) {
+        userConfirmation = confirm("В данных все еще могут быть аномальные значения. Точно сохранить?");
+        if (userConfirmation) {
           saveResults();
         }
+      } else {
+        saveResults();
       }
+    }
 
-      function checkForAnomal() {
-        let numbers = loadNumbersFromCells();
-        n = numbers.length;
-        k = getK(numbers.length);
+    function checkForAnomal() {
+      let numbers = loadNumbersFromCells();
+      n = numbers.length;
+      k = getK(numbers.length);
 
-        clearNumbers = []; //
-        clearIndexes = [];
+      clearNumbers = []; //
+      clearIndexes = [];
 
-        anomalNumbers = [];
-        anomalIndexes = [];
+      anomalNumbers = [];
+      anomalIndexes = [];
 
-        for (let i = 0; i < n; i++) {
-          if ((numbers[i] - SredPloshad.value) / Otklonenie.value >= k) {
-            anomalIndexes.push(i);
-            anomalNumbers.push(numbers[i]);
-          } else {
-            clearIndexes.push(i);
-            clearNumbers.push(numbers[i]);
-          }
+      for (let i = 0; i < n; i++) {
+        if ((numbers[i] - SredPloshad.value) / Otklonenie.value >= k) {
+          anomalIndexes.push(i);
+          anomalNumbers.push(numbers[i]);
+        } else {
+          clearIndexes.push(i);
+          clearNumbers.push(numbers[i]);
         }
-        const anomalFound = anomalIndexes.length > 0 ? true : false;
-
-        return {
-          clearIndexes: clearIndexes,
-          clearNumbers: clearNumbers,
-          anomalIndexes: anomalIndexes,
-          anomalNumbers: anomalNumbers,
-          anomalFound: anomalFound,
-        };
       }
-      function anomalHide(id) {
-        var numericId = String(id.id);
+      const anomalFound = anomalIndexes.length > 0 ? true : false;
 
-        numericId = numericId.replace(/[^0-9]/g, "");
+      return {
+        clearIndexes: clearIndexes,
+        clearNumbers: clearNumbers,
+        anomalIndexes: anomalIndexes,
+        anomalNumbers: anomalNumbers,
+        anomalFound: anomalFound,
+      };
+    }
+    function anomalHide(id) {
+      var numericId = String(id.id);
 
-        var numbers = loadNumbersFromCells();
-        var coords = loadCoordsFromCells();
+      numericId = numericId.replace(/[^0-9]/g, "");
 
-        coords.splice(numericId, 1);
-        numbers.splice(numericId, 1);
+      var numbers = loadNumbersFromCells();
+      var coords = loadCoordsFromCells();
 
-        genTable(numbers.length);
-        fillTable(numbers, coords);
+      coords.splice(numericId, 1);
+      numbers.splice(numericId, 1);
 
-        storeNumbers(numbers);
-        storePolygons(coords);
+      genTable(numbers.length);
+      fillTable(numbers, coords);
 
-        findAnomaly();
+      storeNumbers(numbers);
+      storePolygons(coords);
+
+      findAnomaly();
+    }
+
+    function anomalMid(id) {
+      var numericId = String(id.id);
+
+      numericId = numericId.replace(/[^0-9]/g, "");
+
+      var numbers = loadNumbersFromCells();
+
+      numbers[numericId] = Number(document.getElementById("SredPloshad").value).toFixed(0);
+
+      genTable(numbers.length);
+      fillTable(numbers);
+      storeNumbers(numbers);
+      findAnomaly();
+    }
+
+    function anomalMax(id) {
+      var numericId = String(id.id);
+
+      numericId = numericId.replace(/[^0-9]/g, "");
+
+      var numbers = loadNumbersFromCells();
+
+      const maxClearNumber = Math.max(...checkForAnomal().clearNumbers);
+
+      numbers[numericId] = maxClearNumber;
+
+      genTable(numbers.length);
+      fillTable(numbers);
+      storeNumbers(numbers);
+      findAnomaly();
+    }
+
+    function anomalMaxCalc(id) {
+      var numericId = String(id.id);
+
+      numericId = numericId.replace(/[^0-9]/g, "");
+
+      var numbers = loadNumbersFromCells();
+
+      const newNumber = Math.floor(0.99 * (getK(numbers.length) * Otklonenie.value + +SredPloshad.value)).toFixed(0);
+
+      numbers[numericId] = newNumber;
+
+      genTable(numbers.length);
+      fillTable(numbers, getStoredPolygons());
+      storeNumbers(numbers);
+      findAnomaly();
+    }
+
+    function fillRandom() {
+      let valuesNumber = Number(document.getElementById("squaresNumber").value) || Number(10);
+      let values = [];
+      genTable(valuesNumber);
+      for (var i = 0; i < valuesNumber; i++) {
+        values[i] = getRandomInt(0, 100);
+      }
+      fillTable(values, getStoredPolygons());
+    }
+
+    function genCheckboxes(config = getStoredConfig()) {
+      const prevCheckboxes = document.getElementById("checkboxForm");
+      if (prevCheckboxes) {
+        console.log("gp");
+        prevCheckboxes.remove();
       }
 
-      function anomalMid(id) {
-        var numericId = String(id.id);
+      const form = document.createElement("form");
+      form.id = "checkboxForm";
+      form.action = "javascript:setConfig()";
 
-        numericId = numericId.replace(/[^0-9]/g, "");
+      for (const key in config) {
+        if (config.hasOwnProperty(key)) {
+          const wrapper = document.createElement("div");
+          wrapper.style.marginBottom = "10px";
 
-        var numbers = loadNumbersFromCells();
+          const checkbox = document.createElement("input");
+          checkbox.type = "checkbox";
+          checkbox.id = key;
+          checkbox.name = key;
+          checkbox.checked = config[key];
+          checkbox.onchange = () => {
+            form.submit();
+          };
 
-        numbers[numericId] = Number(document.getElementById("SredPloshad").value).toFixed(0);
+          const label = document.createElement("label");
+          label.htmlFor = key;
+          label.textContent = configKeysToNames[key];
 
-        genTable(numbers.length);
-        fillTable(numbers);
-        storeNumbers(numbers);
-        findAnomaly();
-      }
+          wrapper.appendChild(checkbox);
+          wrapper.appendChild(label);
 
-      function anomalMax(id) {
-        var numericId = String(id.id);
-
-        numericId = numericId.replace(/[^0-9]/g, "");
-
-        var numbers = loadNumbersFromCells();
-
-        const maxClearNumber = Math.max(...checkForAnomal().clearNumbers);
-
-        numbers[numericId] = maxClearNumber;
-
-        genTable(numbers.length);
-        fillTable(numbers);
-        storeNumbers(numbers);
-        findAnomaly();
-      }
-
-      function anomalMaxCalc(id) {
-        var numericId = String(id.id);
-
-        numericId = numericId.replace(/[^0-9]/g, "");
-
-        var numbers = loadNumbersFromCells();
-
-        const newNumber = Math.floor(0.99 * (getK(numbers.length) * Otklonenie.value + +SredPloshad.value)).toFixed(0);
-
-        numbers[numericId] = newNumber;
-
-        genTable(numbers.length);
-        fillTable(numbers, getStoredPolygons());
-        storeNumbers(numbers);
-        findAnomaly();
-      }
-
-      function fillRandom() {
-        let valuesNumber = Number(document.getElementById("squaresNumber").value) || Number(10);
-        let values = [];
-        genTable(valuesNumber);
-        for (var i = 0; i < valuesNumber; i++) {
-          values[i] = getRandomInt(0, 100);
+          form.appendChild(wrapper);
         }
-        fillTable(values, getStoredPolygons());
       }
 
-      function genCheckboxes(config = getStoredConfig()) {
-        const prevCheckboxes = document.getElementById("checkboxForm");
-        if (prevCheckboxes) {
-          console.log("gp");
-          prevCheckboxes.remove();
-        }
+      document.body.appendChild(form);
+    }
 
-        const form = document.createElement("form");
-        form.id = "checkboxForm";
-        form.action = "javascript:setConfig()";
+    // this one just uses array of ids to search for checkboxes wit their id. it sucks so much i cant believe this is real
+    function setConfig(keys = Object.keys(defaultConfig)) {
+      // newConfig = {};
+      // for (key of keys) {
+      //   try {
+      //     const box = document.getElementById(key);
+      //     newConfig[key] = box.checked;
+      //   } catch (err) {
+      //     newConfig[key] = defaultConfig[key];
+      //   }
+      // }
 
-        for (const key in config) {
-          if (config.hasOwnProperty(key)) {
-            const wrapper = document.createElement("div");
-            wrapper.style.marginBottom = "10px";
+      // storeConfig(newConfig);
+      // findAnomaly();
+      // canvDraw();
+    }
 
-            const checkbox = document.createElement("input");
-            checkbox.type = "checkbox";
-            checkbox.id = key;
-            checkbox.name = key;
-            checkbox.checked = config[key];
-            checkbox.onchange = () => {
-              form.submit();
-            };
+    function canvDraw(focusedSquare = undefined) {
+      var numbers = loadNumbersFromCells();
+      const maxv = Math.max(...numbers);
+      const config = getStoredConfig();
 
-            const label = document.createElement("label");
-            label.htmlFor = key;
-            label.textContent = configKeysToNames[key];
-
-            wrapper.appendChild(checkbox);
-            wrapper.appendChild(label);
-
-            form.appendChild(wrapper);
-          }
-        }
-
-        document.body.appendChild(form);
+      let colors = {
+        bg: document.getElementById("bg").value,
+        spread: document.getElementById("spread").value,
+        anomal: document.getElementById("anomal").value,
+        sred: document.getElementById("sred").value,
+        coord: document.getElementById("coords").value,
+        text: document.getElementById("text").value
       }
 
-      // this one just uses array of ids to search for checkboxes wit their id. it sucks so much i cant believe this is real
-      function setConfig(keys = Object.keys(defaultConfig)) {
-        newConfig = {};
-        for (key of keys) {
-          try {
-            const box = document.getElementById(key);
-            newConfig[key] = box.checked;
-          } catch (err) {
-            newConfig[key] = defaultConfig[key];
-          }
-        }
+      console.log(colors)
+      let max = getK(numbers.length) * Otklonenie.value + +SredPloshad.value;
+      let min = -(getK(numbers.length) * Otklonenie.value) + +SredPloshad.value;
+      let mid = parseFloat(SredPloshad.value);
+      let disp = mid + parseFloat(Otklonenie.value);
+      let dispLeft = mid - parseFloat(Otklonenie.value);
+      let canv = document.getElementById("canv");
+      let ctx = canv.getContext("2d");
 
-        storeConfig(newConfig);
-        findAnomaly();
-        canvDraw();
+      let koord;
+      canv.width = 600;
+      canv.height = 300;
+      ctx.beginPath();
+
+      ctx.strokeStyle = colors.coord;
+
+      ctx.fillStyle = colors.bg;
+      ctx.fillRect(0, 0, canv.width, canv.height);
+      ctx.fillStyle = colors.text;
+
+      ctx.moveTo(5.5, 5.5);
+      ctx.lineTo(3.5, 15.5);
+      ctx.moveTo(5.5, 5.5);
+      ctx.lineTo(7.5, 15.5);
+      ctx.moveTo(5.5, 5.5);
+      ctx.lineTo(5.5, 280.5);
+      ctx.lineTo(590.5, 280.5);
+      ctx.lineTo(580.5, 278.5);
+      ctx.moveTo(590.5, 280.5);
+      ctx.lineTo(580.5, 282.5);
+      ctx.closePath();
+      ctx.stroke();
+
+
+      let n = numbers.length;
+
+      for (let i = 0; i < n; i++) {
+        const j = (i + 1 - numbers.length / 2) * 7.5;
+        coord = numbers[i];
+        if (i == focusedSquare) {
+          drawCross(ctx, coord, "blue", j, maxv);
+        } else if ((coord > max) || (coord < min)) {
+          drawCross(ctx, coord, "red", j, maxv);
+        } else {
+          drawCross(ctx, coord, "black", j, maxv);
+        }
       }
 
-      function canvDraw(focusedSquare = undefined) {
-        var numbers = loadNumbersFromCells();
-        const maxv = Math.max(...numbers);
+
+      ctx.fillText("Аномал", (570.5 * max) / maxv, 10);
+      ctx.fillText("Аномал", (570.5 * min) / maxv, 10);
+      ctx.fillText("Сред", (570.5 * mid) / maxv, 10);
+      ctx.fillText("Откл", (570.5 * dispLeft) / maxv, 10);
+      ctx.fillText("Откл", (570.5 * disp) / maxv, 10);
+
+
+
+      ctx.fillText(min.toFixed(2), (570.5 * min) / maxv, 20);
+      ctx.fillText(max.toFixed(2), (570.5 * max) / maxv, 20);
+      ctx.fillText(mid.toFixed(2), (570.5 * mid) / maxv, 20);
+      ctx.fillText(dispLeft.toFixed(2), (570.5 * dispLeft) / maxv, 20);
+      ctx.fillText(disp.toFixed(2), (570.5 * disp) / maxv, 20);
+
+      ctx.beginPath();
+      ctx.strokeStyle = colors.anomal;
+      ctx.moveTo(5.5 + (570.5 * max) / maxv, 5.5);
+      ctx.lineTo(5.5 + (570.5 * max) / maxv, 280.5);
+      ctx.stroke();
+      ctx.closePath();
+
+      ctx.beginPath();
+      ctx.strokeStyle = colors.anomal;
+      ctx.moveTo(5.5 + (570.5 * min) / maxv, 5.5);
+      ctx.lineTo(5.5 + (570.5 * min) / maxv, 280.5);
+      ctx.stroke();
+      ctx.closePath();
+
+      ctx.beginPath();
+      ctx.strokeStyle = colors.sred;
+      ctx.moveTo(5.5 + (570.5 * mid) / maxv, 5.5);
+      ctx.lineTo(5.5 + (570.5 * mid) / maxv, 280.5);
+      ctx.stroke();
+      ctx.closePath();
+
+      ctx.beginPath();
+      ctx.strokeStyle = colors.spread;
+      ctx.moveTo(5.5 + (570.5 * disp) / maxv, 5.5);
+      ctx.lineTo(5.5 + (570.5 * disp) / maxv, 280.5);
+      ctx.stroke();
+      ctx.closePath();
+
+      ctx.beginPath();
+      ctx.strokeStyle = colors.spread;
+      ctx.moveTo(5.5 + (570.5 * dispLeft) / maxv, 5.5);
+      ctx.lineTo(5.5 + (570.5 * dispLeft) / maxv, 280.5);
+      ctx.stroke();
+      ctx.closePath();
+
+
+      function drawCross(ctx, coord, style = "black", j, maxv) {
         const config = getStoredConfig();
 
-        let max = getK(numbers.length) * Otklonenie.value + +SredPloshad.value;
-        let min = -(getK(numbers.length) * Otklonenie.value) + +SredPloshad.value;
-        let mid = parseFloat(SredPloshad.value);
-        let disp = mid + parseFloat(Otklonenie.value);
-        let dispLeft = mid - parseFloat(Otklonenie.value);
-        let canv = document.getElementById("canv");
-        let ctx = canv.getContext("2d");
-        let koord;
-        canv.width = 600;
-        canv.height = 300;
         ctx.beginPath();
+        if (config.crosses) {
+          ctx.strokeStyle = style;
+          ctx.moveTo(5.5 + (570.5 * coord) / maxv - 3, 152.5 + j);
+          ctx.lineTo(5.5 + (570.5 * coord) / maxv + 3, 146.5 + j);
+          ctx.stroke();
 
-        ctx.lineWidth = 1;
-
-        if (config.axes) {
-          ctx.moveTo(5.5, 5.5);
-          ctx.lineTo(3.5, 15.5);
-          ctx.moveTo(5.5, 5.5);
-          ctx.lineTo(7.5, 15.5);
-          ctx.moveTo(5.5, 5.5);
-          ctx.lineTo(5.5, 280.5);
-          ctx.lineTo(590.5, 280.5);
-          ctx.lineTo(580.5, 278.5);
-          ctx.moveTo(590.5, 280.5);
-          ctx.lineTo(580.5, 282.5);
-          ctx.closePath();
+          ctx.moveTo(5.5 + (570.5 * coord) / maxv + 3, 152.5 + j);
+          ctx.lineTo(5.5 + (570.5 * coord) / maxv - 3, 146.5 + j);
           ctx.stroke();
         }
+        if (config.crossesNumbers) {
+          ctx.fillText(Math.round(coord), 5.5 + (570.5 * coord) / maxv - 5, 295.5);
+        }
+        ctx.closePath();
+      }
+    }
 
-        let n = numbers.length;
+    function saveResults() {
+      let n = loadNumbersFromCells().length;
 
-        for (let i = 0; i < n; i++) {
-          const j = (i + 1 - numbers.length / 2) * 7.5;
-          coord = numbers[i];
-          if (i == focusedSquare) {
-            drawCross(ctx, coord, "blue", j, maxv);
-          } else if ((coord > max) || ( coord < min)) {
-            drawCross(ctx, coord, "red", j, maxv);
-          } else {
-            drawCross(ctx, coord, "black", j, maxv);
+      let mysavedtext = "";
+      for (let i = 0; i < n; i++) {
+        element1 = "square" + i;
+        mysavedtext = mysavedtext + document.getElementById(element1).value + ";";
+      }
+      console.log(mysavedtext);
+      document.write('<a href="data:text/plain;charset=utf-8,%EF%BB%BF' + encodeURIComponent(mysavedtext) + '" download="значения.txt">значения.txt</a>');
+    }
+
+    function initializeTable() {
+      const textareaStrings = document.getElementById("textarea").value.split("\n");
+      const squaresNumber = Number(document.getElementById("squaresNumber").value);
+
+      clearTable();
+
+      if (textareaStrings.length > 1) {
+        let numbersForTable = [];
+        let polygonsForTable = [];
+        genTable(textareaStrings.length);
+        for (string of textareaStrings) {
+          const stringArray = string.split(";");
+          numbersForTable.push(stringArray[0]);
+          if (stringArray.slice(1).join(";").length != 0) {
+            polygonsForTable.push(stringArray.slice(1).join(";"));
           }
         }
-
-        if (config.linesNames) {
-          ctx.fillText("Аномал", (570.5 * max) / maxv, 10);
-          ctx.fillText("Аномал", (570.5 * min) / maxv, 10);
-          ctx.fillText("Сред", (570.5 * mid) / maxv, 10);
-          ctx.fillText("Откл", (570.5 * dispLeft) / maxv, 10);
-          ctx.fillText("Откл", (570.5 * disp) / maxv, 10);
+        if (numbersForTable.length != polygonsForTable.length) {
+          alert("Количество площадей и наборов координат разное! Проверьте входные данные");
         }
 
-        if (config.linesNumbers) {
-          ctx.fillText(min.toFixed(2), (570.5 * min) / maxv, 20);
-          ctx.fillText(max.toFixed(2), (570.5 * max) / maxv, 20);
-          ctx.fillText(mid.toFixed(2), (570.5 * mid) / maxv, 20);
-          ctx.fillText(dispLeft.toFixed(2), (570.5 * dispLeft) / maxv, 20);
-          ctx.fillText(disp.toFixed(2), (570.5 * disp) / maxv, 20);
-        }
-        if (config.lines) {
-          ctx.beginPath();
-          ctx.strokeStyle = "red";
-          ctx.moveTo(5.5 + (570.5 * max) / maxv, 5.5);
-          ctx.lineTo(5.5 + (570.5 * max) / maxv, 280.5);
-          ctx.stroke();
-          ctx.closePath();
+        fillTable(numbersForTable, polygonsForTable);
+        clearElement("#textarea");
+        document.getElementById("textarea").value = "";
+        findAnomaly();
+      } else {
+        genTable(squaresNumber);
+      }
+    }
 
-          ctx.beginPath();
-          ctx.strokeStyle = "red";
-          ctx.moveTo(5.5 + (570.5 * min) / maxv, 5.5);
-          ctx.lineTo(5.5 + (570.5 * min) / maxv, 280.5);
-          ctx.stroke();
-          ctx.closePath();
+    function clearTable() {
+      clearElement("#tableSpace");
+    }
 
-          ctx.beginPath();
-          ctx.strokeStyle = "green";
-          ctx.moveTo(5.5 + (570.5 * mid) / maxv, 5.5);
-          ctx.lineTo(5.5 + (570.5 * mid) / maxv, 280.5);
-          ctx.stroke();
-          ctx.closePath();
-
-          ctx.beginPath();
-          ctx.strokeStyle = "yellow";
-          ctx.moveTo(5.5 + (570.5 * disp) / maxv, 5.5);
-          ctx.lineTo(5.5 + (570.5 * disp) / maxv, 280.5);
-          ctx.stroke();
-          ctx.closePath();
-
-          ctx.beginPath();
-          ctx.strokeStyle = "yellow";
-          ctx.moveTo(5.5 + (570.5 * dispLeft) / maxv, 5.5);
-          ctx.lineTo(5.5 + (570.5 * dispLeft) / maxv, 280.5);
-          ctx.stroke();
-          ctx.closePath();
-        }
-
-        function drawCross(ctx, coord, style = "black", j, maxv) {
-          const config = getStoredConfig();
-
-          ctx.beginPath();
-          if (config.crosses) {
-            ctx.strokeStyle = style;
-            ctx.moveTo(5.5 + (570.5 * coord) / maxv - 3, 152.5 + j);
-            ctx.lineTo(5.5 + (570.5 * coord) / maxv + 3, 146.5 + j);
-            ctx.stroke();
-
-            ctx.moveTo(5.5 + (570.5 * coord) / maxv + 3, 152.5 + j);
-            ctx.lineTo(5.5 + (570.5 * coord) / maxv - 3, 146.5 + j);
-            ctx.stroke();
-          }
-          if (config.crossesNumbers) {
-            ctx.fillText(Math.round(coord), 5.5 + (570.5 * coord) / maxv - 5, 295.5);
-          }
-          ctx.closePath();
+    function fillTable(elements, coords = getStoredPolygons()) {
+      for (let i = 0; i < elements.length; i++) {
+        currentCell = document.getElementById("square" + i);
+        if (currentCell) {
+          currentCell.value = elements[i];
         }
       }
 
-      function saveResults() {
-        let n = loadNumbersFromCells().length;
+      for (let i = 0; i < coords.length; i++) {
+        currentCell = document.getElementById("coord" + i);
+        if (currentCell) {
+          currentCell.value = coords[i];
+        }
+      }
 
-        let mysavedtext = "";
+      storeNumbers(elements);
+      storePolygons(coords);
+    }
+
+    function findAnomaly() {
+      let numbers = loadNumbersFromCells();
+      storeNumbers(numbers);
+
+      let coords = loadCoordsFromCells();
+      storePolygons(coords);
+
+      n = numbers.length;
+      k = getK(numbers.length);
+      koef.value = k;
+      SumPloshad.value = 0;
+      SredPloshad.value = 0;
+      Otklonenie.value = 0;
+      let sum = 0;
+      for (let i = 0; i < numbers.length; i++) {
+        let element = "square" + i;
+        sum += Number(document.getElementById(element).value);
+      }
+      SumPloshad.value = sum;
+      SredPloshad.value = (SumPloshad.value / n).toFixed(1);
+      for (let i = 0; i < n; i++) {
+        if (i <= n) {
+          let element = "square" + i;
+          Otklonenie.value = +Otklonenie.value + Math.pow(document.getElementById(element).value - SredPloshad.value, 2);
+        }
+      }
+      Otklonenie.value = Math.sqrt(Otklonenie.value / n).toFixed(2);
+
+      for (let i = 0; i < n; i++) {
+        let element = "square" + i;
+        clearField(element);
+        if ((document.getElementById(element).value - SredPloshad.value) / Otklonenie.value >= k || -(document.getElementById(element).value - SredPloshad.value) / Otklonenie.value >= k) {
+          const cell = document.getElementById(element);
+          cell.style.background = "red";
+          cell.classList.add("anomal");
+          insertContextCell(cell);
+        }
+        let coord = "";
+      }
+      canvDraw();
+      drawPolygons();
+    }
+
+    function drawPolygons(focusedPoly = undefined) {
+      console.log(focusedPoly);
+      let canv = document.getElementById("canv2");
+      let ctx = canv.getContext("2d");
+      canv.width = 600;
+      canv.height = 300;
+      let pic = new Image();
+      ctx = canv.getContext("2d");
+      pic.src = "map.jpg";
+      canv.width = 600;
+      canv.height = 300;
+      const mid = SredPloshad.value;
+
+      pic.onload = function () {
+        ctx.drawImage(pic, 0, 0, canv.width, canv.height);
+        let n = parseFloat(loadNumbersFromCells().length);
         for (let i = 0; i < n; i++) {
+          sredX = 0;
+          sredY = 0;
           element1 = "square" + i;
-          mysavedtext = mysavedtext + document.getElementById(element1).value + ";";
-        }
-        console.log(mysavedtext);
-        document.write('<a href="data:text/plain;charset=utf-8,%EF%BB%BF' + encodeURIComponent(mysavedtext) + '" download="значения.txt">значения.txt</a>');
-      }
+          element2 = "coord" + i;
 
-      function initializeTable() {
-        const textareaStrings = document.getElementById("textarea").value.split("\n");
-        const squaresNumber = Number(document.getElementById("squaresNumber").value);
+          const koord = document.getElementById(element2).value;
+          const koordmass = koord.split(";");
 
-        clearTable();
+          ctx.beginPath();
 
-        if (textareaStrings.length > 1) {
-          let numbersForTable = [];
-          let polygonsForTable = [];
-          genTable(textareaStrings.length);
-          for (string of textareaStrings) {
-            const stringArray = string.split(";");
-            numbersForTable.push(stringArray[0]);
-            if (stringArray.slice(1).join(";").length != 0) {
-              polygonsForTable.push(stringArray.slice(1).join(";"));
-            }
+          let disp = mid + parseFloat(Otklonenie.value);
+
+          const number = document.getElementById(element1).value;
+
+          const green = (Math.abs(number - mid) / parseFloat(Otklonenie.value)) * 255;
+
+          if (i == focusedPoly) {
+            ctx.fillStyle = "rgba(0, 0, 255, 0.8)";
+          } else if (
+            (document.getElementById(element1).value - SredPloshad.value) / Otklonenie.value >= koef.value ||
+            -(document.getElementById(element1).value - SredPloshad.value) / Otklonenie.value >= koef.value
+          ) {
+            ctx.fillStyle = "rgba(255, 0, 0, 0.7)";
+          } else {
+            ctx.fillStyle = `rgba(${green},255 , 0, 0.7)`;
           }
-          if (numbersForTable.length != polygonsForTable.length) {
-            alert("Количество площадей и наборов координат разное! Проверьте входные данные");
-          }
-
-          fillTable(numbersForTable, polygonsForTable);
-          clearElement("#textarea");
-          document.getElementById("textarea").value = "";
-          findAnomaly();
-        } else {
-          genTable(squaresNumber);
-        }
-      }
-
-      function clearTable() {
-        clearElement("#tableSpace");
-      }
-
-      function fillTable(elements, coords = getStoredPolygons()) {
-        for (let i = 0; i < elements.length; i++) {
-          currentCell = document.getElementById("square" + i);
-          if (currentCell) {
-            currentCell.value = elements[i];
-          }
-        }
-
-        for (let i = 0; i < coords.length; i++) {
-          currentCell = document.getElementById("coord" + i);
-          if (currentCell) {
-            currentCell.value = coords[i];
-          }
-        }
-
-        storeNumbers(elements);
-        storePolygons(coords);
-      }
-
-      function findAnomaly() {
-        let numbers = loadNumbersFromCells();
-        storeNumbers(numbers);
-
-        let coords = loadCoordsFromCells();
-        storePolygons(coords);
-
-        n = numbers.length;
-        k = getK(numbers.length);
-        koef.value = k;
-        SumPloshad.value = 0;
-        SredPloshad.value = 0;
-        Otklonenie.value = 0;
-        let sum = 0;
-        for (let i = 0; i < numbers.length; i++) {
-          let element = "square" + i;
-          sum += Number(document.getElementById(element).value);
-        }
-        SumPloshad.value = sum;
-        SredPloshad.value = (SumPloshad.value / n).toFixed(1);
-        for (let i = 0; i < n; i++) {
-          if (i <= n) {
-            let element = "square" + i;
-            Otklonenie.value = +Otklonenie.value + Math.pow(document.getElementById(element).value - SredPloshad.value, 2);
-          }
-        }
-        Otklonenie.value = Math.sqrt(Otklonenie.value / n).toFixed(2);
-
-        for (let i = 0; i < n; i++) {
-          let element = "square" + i;
-          clearField(element);
-          if ((document.getElementById(element).value - SredPloshad.value) / Otklonenie.value >= k || -(document.getElementById(element).value - SredPloshad.value) / Otklonenie.value >= k) {
-            const cell = document.getElementById(element);
-            cell.style.background = "red";
-            cell.classList.add("anomal");
-            insertContextCell(cell);
-          }
-          let coord = "";
-        }
-        canvDraw();
-        drawPolygons();
-      }
-
-      function drawPolygons(focusedPoly = undefined) {
-        console.log(focusedPoly);
-        let canv = document.getElementById("canv2");
-        let ctx = canv.getContext("2d");
-        canv.width = 600;
-        canv.height = 300;
-        let pic = new Image();
-        ctx = canv.getContext("2d");
-        pic.src = "map.jpg";
-        canv.width = 600;
-        canv.height = 300;
-        const mid = SredPloshad.value;
-
-        pic.onload = function () {
-          ctx.drawImage(pic, 0, 0, canv.width, canv.height);
-          let n = parseFloat(squaresNumber.value);
-          for (let i = 0; i < n; i++) {
-            sredX = 0;
-            sredY = 0;
-            element1 = "square" + i;
-            element2 = "coord" + i;
-
-            const koord = document.getElementById(element2).value;
-            const koordmass = koord.split(";");
-
-            ctx.beginPath();
-
-            let disp = mid + parseFloat(Otklonenie.value);
-
-            const number = document.getElementById(element1).value;
-
-            const green = (Math.abs(number - mid) / parseFloat(Otklonenie.value)) * 255;
-
-            if (i == focusedPoly) {
-              ctx.fillStyle = "rgba(0, 0, 255, 0.8)";
-            } else if (
-              (document.getElementById(element1).value - SredPloshad.value) / Otklonenie.value >= koef.value ||
-              -(document.getElementById(element1).value - SredPloshad.value) / Otklonenie.value >= koef.value
-            ) {
-              ctx.fillStyle = "rgba(255, 0, 0, 0.7)";
+          for (let j = 1; j < koordmass.length; j += 2) {
+            if (j > 1) {
+              ctx.lineTo(koordmass[j - 1], koordmass[j]);
             } else {
-              ctx.fillStyle = `rgba(${green},255 , 0, 0.7)`;
+              ctx.moveTo(koordmass[j - 1], koordmass[j]);
             }
-            for (let j = 1; j < koordmass.length; j += 2) {
-              if (j > 1) {
-                ctx.lineTo(koordmass[j - 1], koordmass[j]);
-              } else {
-                ctx.moveTo(koordmass[j - 1], koordmass[j]);
-              }
-              sredX = (sredX * ((koordmass.length - 1) / 2) + parseFloat(koordmass[j - 1])) / ((koordmass.length - 1) / 2);
-              sredY = (sredY * ((koordmass.length - 1) / 2) + parseFloat(koordmass[j])) / ((koordmass.length - 1) / 2);
-            }
-            ctx.fill();
-            ctx.closePath();
-            ctx.fillStyle = "black";
-            ctx.font = "italic 16pt Arial";
-            ctx.fillText(document.getElementById(element1).value, sredX, sredY);
+            sredX = (sredX * ((koordmass.length - 1) / 2) + parseFloat(koordmass[j - 1])) / ((koordmass.length - 1) / 2);
+            sredY = (sredY * ((koordmass.length - 1) / 2) + parseFloat(koordmass[j])) / ((koordmass.length - 1) / 2);
           }
-        };
-      }
-
-      function genTable(rowsCount) {
-        clearTable();
-        genCheckboxes(getStoredConfig());
-        const tableSpace = document.getElementById("tableSpace");
-        console.log("got rCount:", rowsCount);
-
-        tableSpace.style.display = "block";
-
-        let table = document.createElement("table");
-
-        let headerRow = table.insertRow();
-        let headerCell1 = headerRow.insertCell(0);
-        headerCell1.innerHTML = "Участок";
-        let headerCell2 = headerRow.insertCell(1);
-        headerCell2.innerHTML = "Площадь";
-        let headerCell3 = headerRow.insertCell(2);
-        headerCell3.innerHTML = "Координаты участка";
-        let headerCell4 = headerRow.insertCell(3);
-        headerCell4.innerHTML = "Действия";
-
-        for (let i = 0; i < rowsCount; i++) {
-          let row = table.insertRow();
-          let cell1 = row.insertCell(0);
-          cell1.innerHTML = "Участок " + Number(i + 1);
-          let cell2 = row.insertCell(1);
-          cell2.innerHTML = "<input type='text' id='square" + i + "' value='' onBlur='drawPolygons();canvDraw();' onClick='drawPolygons(" + i + ");canvDraw(" + i + ");'>";
-          let cell3 = row.insertCell(2);
-          cell3.innerHTML = "<input type='text' id='coord" + i + "' value='' onBlur='drawPolygons();canvDraw()' onClick='drawPolygons(" + i + ");canvDraw(" + i + ");'>";
+          ctx.fill();
+          ctx.closePath();
+          ctx.fillStyle = "black";
+          ctx.font = "italic 16pt Arial";
+          ctx.fillText(document.getElementById(element1).value, sredX, sredY);
         }
-        tableSpace.appendChild(table);
+      };
+    }
 
-        tableSpace.innerHTML = tableSpace.innerHTML + "<hr><input type=button value='Поиск аномальных значений' onClick='findAnomaly()' id='Button2'><br>";
-        tableSpace.innerHTML = tableSpace.innerHTML + "Средняя площадь повреждённой территории: <input type=text id='SredPloshad'><br>";
-        tableSpace.innerHTML = tableSpace.innerHTML + "Общая площадь повреждённой территории: <input type=text id='SumPloshad'><br>";
-        tableSpace.innerHTML = tableSpace.innerHTML + "Среднеквадратическое отклонение: <input type=text id='Otklonenie'><br>";
-        tableSpace.innerHTML = tableSpace.innerHTML + "Коэффициент: <input type=text id='koef'><br>";
+    function genTable(rowsCount) {
+      clearTable();
+      const tableSpace = document.getElementById("tableSpace");
+      console.log("got rCount:", rowsCount);
+
+      tableSpace.style.display = "block";
+
+      let table = document.createElement("table");
+
+      let headerRow = table.insertRow();
+      let headerCell1 = headerRow.insertCell(0);
+      headerCell1.innerHTML = "Участок";
+      let headerCell2 = headerRow.insertCell(1);
+      headerCell2.innerHTML = "Площадь";
+      let headerCell3 = headerRow.insertCell(2);
+      headerCell3.innerHTML = "Координаты участка";
+      let headerCell4 = headerRow.insertCell(3);
+      headerCell4.innerHTML = "Действия";
+
+      for (let i = 0; i < rowsCount; i++) {
+        let row = table.insertRow();
+        let cell1 = row.insertCell(0);
+        cell1.innerHTML = "Участок " + Number(i + 1);
+        let cell2 = row.insertCell(1);
+        cell2.innerHTML = "<input type='text' id='square" + i + "' value='' onBlur='drawPolygons();canvDraw();' onClick='drawPolygons(" + i + ");canvDraw(" + i + ");'>";
+        let cell3 = row.insertCell(2);
+        cell3.innerHTML = "<input type='text' id='coord" + i + "' value='' onBlur='drawPolygons();canvDraw()' onClick='drawPolygons(" + i + ");canvDraw(" + i + ");'>";
       }
-    </script>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>inst</title>
-  </head>
+      tableSpace.appendChild(table);
 
-  <body onLoad="pageLoad()">
-    <b>Количество лесных участков, подверженных болезни</b><br /><br />
-    <input type="text" value="10" id="squaresNumber" />
-    <button onClick="squaresNumber.value=Number(squaresNumber.value)-1;genTable(squaresNumber.value);fillTable(getStoredNumbers(),getStoredPolygons())">-</button>
-    <button onClick="squaresNumber.value=Number(squaresNumber.value)+1;genTable(squaresNumber.value);fillTable(getStoredNumbers(),getStoredPolygons())">+</button>
-    <button onClick="fillRandom();">Заполнить случайными данными</button>
-    <br /><br />
-    <input type="button" value="Далее" onClick="initializeTable();" id="Button1" /><br />
-    <hr />
-    <div id="tableSpace" style="display: none"></div>
-    <br />
-    <textarea id="textarea" placeholder="Скопируйте сюда все значения" style="width: 300px"></textarea>
-    <button onClick="preSaveCheck()">Сохранить</button>
-    <canvas id="canv" style="width: 500px; height: 250px; border: 1px double black">Обновите браузер</canvas>
-    <canvas id="canv2" style="width: 500px; height: 250px; border: 1px double black">Обновите браузер</canvas>
-  </body>
+      tableSpace.innerHTML = tableSpace.innerHTML + "<hr><input type=button value='Поиск аномальных значений' onClick='findAnomaly()' id='Button2'><br>";
+      tableSpace.innerHTML = tableSpace.innerHTML + "Средняя площадь повреждённой территории: <input type=text id='SredPloshad'><br>";
+      tableSpace.innerHTML = tableSpace.innerHTML + "Общая площадь повреждённой территории: <input type=text id='SumPloshad'><br>";
+      tableSpace.innerHTML = tableSpace.innerHTML + "Среднеквадратическое отклонение: <input type=text id='Otklonenie'><br>";
+      tableSpace.innerHTML = tableSpace.innerHTML + "Коэффициент: <input type=text id='koef'><br>";
+    }
+  </script>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>inst</title>
+</head>
+
+<body onLoad="pageLoad()">
+  <b>Количество лесных участков, подверженных болезни</b><br /><br />
+  <input type="text" value="10" id="squaresNumber" />
+  <button
+    onClick="squaresNumber.value=Number(squaresNumber.value)-1;genTable(squaresNumber.value);fillTable(getStoredNumbers(),getStoredPolygons())">-</button>
+  <button
+    onClick="squaresNumber.value=Number(squaresNumber.value)+1;genTable(squaresNumber.value);fillTable(getStoredNumbers(),getStoredPolygons())">+</button>
+  <button onClick="fillRandom();">Заполнить случайными данными</button>
+  <br /><br />
+  <input type="button" value="Далее" onClick="initializeTable();" id="Button1" /><br />
+  <hr />
+  <div id="tableSpace" style="display: none"></div>
+  <br />
+  <textarea id="textarea" placeholder="Скопируйте сюда все значения" style="width: 300px"></textarea>
+  <button onClick="preSaveCheck()">Сохранить</button>
+  <canvas id="canv" style="width: 500px; height: 250px; border: 1px double black">Обновите браузер</canvas>
+  <canvas id="canv2" style="width: 500px; height: 250px; border: 1px double black">Обновите браузер</canvas>
+  <img src="design.png">
+  <input type="color" id="bg" name="bg" value="#ffffff" />
+  <label for="bg">Фон</label>
+  <input type="color" id="spread" name="spread" value="#FFFF00" />
+  <label for="spread">Отклонение</label>
+  <input type="color" id="anomal" name="anomal" value="#FF0000" />
+  <label for="anomal">Аномальные</label>
+  <input type="color" id="sred" name="sred" value="#008000" />
+  <label for="sred">Среднее</label>
+  <input type="color" id="coords" name="coords" value="#000000" />
+  <label for="coords">Координаты</label>
+  <input type="color" id="text" name="text" value="#000000" />
+  <label for="text">Подписи</label>
+
+
+</body>
+
 </html>
