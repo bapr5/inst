@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>распознавалочка :3</title>
+</head>
+
+<body>
+    <div style="display: flex; align-items: center;">
+        <canvas id="canv1" width='555' height='555' style="border: 1px black">Обновите браузер</canvas>
+        <canvas id="canv2" style="width: 10px; height: 10px; border: 1px double black">Обновите браузер</canvas>
+    </div>
+    <script lang="Javascript"></script>
+</body>
+<script>
+    window.onload = function () {
+        canvas1 = document.getElementById("canv1");
+        context1 = canvas1.getContext("2d");
+        context1.lineWidth = 33;
+        let mouse = { x: 0, y: 0 };
+        let draw = false;
+
+        canvas1.addEventListener("mousedown", function (ev) {
+            x = ev.offsetX;
+            y = ev.offsetY;
+            draw = true;
+            context1.beginPath();
+            context1.moveTo(x, y);
+        });
+
+        canvas1.addEventListener("mousemove", function (ev) {
+            if (draw == true) {
+                x = ev.offsetX;
+                y = ev.offsetY;
+                context1.lineTo(x, y);
+                context1.stroke();
+            }
+        });
+
+        canvas1.addEventListener("mouseup", function (ev) {
+            if (draw == true) {
+                x = ev.offsetX;
+                y = ev.offsetY;
+                context1.lineTo(x, y);
+                context1.stroke();
+                context1.closePath();
+                draw = false;
+            }
+        });
+
+        // canvas1.addEventListener("mouseout", function (ev) {
+        //     if (draw == true) {
+        //         x = ev.offsetX;
+        //         y = ev.offsetY;
+        //         context1.lineTo(x, y);
+        //         context1.stroke();
+        //         context1.closePath();
+        //         draw = false;
+        //     }
+        // });
+
+
+    }
+</script>
+
+</html>
