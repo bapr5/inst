@@ -50,16 +50,16 @@
             }
         });
 
-        // canvas1.addEventListener("mouseout", function (ev) {
-        //     if (draw == true) {
-        //         x = ev.offsetX;
-        //         y = ev.offsetY;
-        //         context1.lineTo(x, y);
-        //         context1.stroke();
-        //         context1.closePath();
-        //         draw = false;
-        //     }
-        // });
+        canvas1.addEventListener("mouseout", function (ev) {
+            if (draw == true) {
+                x = ev.offsetX;
+                y = ev.offsetY;
+                context1.lineTo(x, y);
+                context1.stroke();
+                context1.closePath();
+                draw = false;
+            }
+        });
 
 
     }
