@@ -1,68 +1,120 @@
 <!DOCTYPE html>
 <html lang="en">
-
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>распознавалочка :3</title>
-</head>
+  </head>
 
-<body>
-    <div style="display: flex; align-items: center;">
-        <canvas id="canv1" width='555' height='555' style="border: 1px black">Обновите браузер</canvas>
-        <canvas id="canv2" style="width: 10px; height: 10px; border: 1px double black">Обновите браузер</canvas>
+  <body>
+    <div style="display: flex; align-items: center">
+      <canvas id="canv1" width="555" height="555" style="border: 1px double black">Обновите браузер</canvas>
+      <canvas id="canv2" style="width: 10px; height: 10px; border: 1px double black">Обновите браузер</canvas>
+    </div>
+    <div>
+      <button onclick="wipeCanvas(document.getElementById('canv1'))">стереть</button>
     </div>
     <script lang="Javascript"></script>
-</body>
-<script>
-    window.onload = function () {
-        canvas1 = document.getElementById("canv1");
-        context1 = canvas1.getContext("2d");
-        context1.lineWidth = 33;
-        let mouse = { x: 0, y: 0 };
-        let draw = false;
+  </body>
+  <script>
+    let canvas1;
+    let canvas2;
+    let context1;
+    let context2;
+    let x;
+    let y;
+    var maxx = 0;
+    var maxy = 0;
 
-        canvas1.addEventListener("mousedown", function (ev) {
-            x = ev.offsetX;
-            y = ev.offsetY;
-            draw = true;
-            context1.beginPath();
-            context1.moveTo(x, y);
-        });
+    var minx = 555;
+    var miny = 555;
 
-        canvas1.addEventListener("mousemove", function (ev) {
-            if (draw == true) {
-                x = ev.offsetX;
-                y = ev.offsetY;
-                context1.lineTo(x, y);
-                context1.stroke();
-            }
-        });
-
-        canvas1.addEventListener("mouseup", function (ev) {
-            if (draw == true) {
-                x = ev.offsetX;
-                y = ev.offsetY;
-                context1.lineTo(x, y);
-                context1.stroke();
-                context1.closePath();
-                draw = false;
-            }
-        });
-
-        canvas1.addEventListener("mouseout", function (ev) {
-            if (draw == true) {
-                x = ev.offsetX;
-                y = ev.offsetY;
-                context1.lineTo(x, y);
-                context1.stroke();
-                context1.closePath();
-                draw = false;
-            }
-        });
-
-
+    function wipeCanvas(canvas) {
+      if (canvas && canvas.getContext) {
+        const ctx = canvas.getContext("2d");
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+      } else {
+        console.error("ты куда канвас дел. шизик.");
+      }
     }
-</script>
 
+    function redrawToCanvas() {
+      canvas2 = document.getElementById("canv2");
+      context2 = canvas2.getContext("2d");
+      context2.lineWidth = 1;
+      context2.drawImage(canvas1, minx, miny, maxx - minx, maxy - miny, 0, 0, 10, 10);
+    }
+
+    function rewriteCoords(x, y) {
+      if (minx > x) {
+        minx = x;
+      }
+      if (maxx < x) {
+        maxx = x;
+      }
+      if (miny > y) {
+        miny = y;
+      }
+      if (maxy < y) {
+        maxy = y;
+      }
+    }
+
+    function recognizeCanvas() {}
+
+    window.onload = function () {
+      canvas1 = document.getElementById("canv1");
+      context1 = canvas1.getContext("2d");
+      context1.lineWidth = 33;
+      let mouse = { x: 0, y: 0 };
+      let draw = false;
+
+      canvas1.addEventListener("mousedown", function (ev) {
+        x = ev.offsetX;
+        y = ev.offsetY;
+        rewriteCoords(x, y);
+
+        draw = true;
+        context1.beginPath();
+        context1.moveTo(x, y);
+      });
+
+      canvas1.addEventListener("mousemove", function (ev) {
+        if (draw == true) {
+          x = ev.offsetX;
+          y = ev.offsetY;
+          rewriteCoords(x, y);
+
+          context1.lineTo(x, y);
+          context1.stroke();
+        }
+      });
+
+      canvas1.addEventListener("mouseup", function (ev) {
+        if (draw == true) {
+          x = ev.offsetX;
+          y = ev.offsetY;
+          rewriteCoords(x, y);
+
+          context1.lineTo(x, y);
+          context1.stroke();
+          context1.closePath();
+          draw = false;
+        }
+      });
+
+      canvas1.addEventListener("mouseout", function (ev) {
+        if (draw == true) {
+          x = ev.offsetX;
+          y = ev.offsetY;
+          rewriteCoords(x, y);
+
+          context1.lineTo(x, y);
+          context1.stroke();
+          context1.closePath();
+          draw = false;
+        }
+      });
+    };
+  </script>
 </html>
