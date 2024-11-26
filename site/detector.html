@@ -53,8 +53,8 @@
     function perenos() {
 
         canv2data.innerHTML = "";
-
         canvas2 = document.getElementById("canv2");
+        wipeCanvas(canvas2)
         context2 = canvas2.getContext("2d");
         context2.lineWidth = 1;
         context2.drawImage(canvas1, minx, miny, maxx - minx, maxy - miny, 0, 0, 10, 10);
@@ -124,6 +124,7 @@
 
                 context1.lineTo(x, y);
                 context1.stroke();
+                // recognizeCanvas();
             }
         });
 
@@ -137,6 +138,7 @@
                 context1.stroke();
                 context1.closePath();
                 draw = false;
+                recognizeCanvas();
             }
         });
 
@@ -150,6 +152,7 @@
                 context1.stroke();
                 context1.closePath();
                 draw = false;
+                recognizeCanvas();
             }
         });
     };
