@@ -7,7 +7,7 @@
   </head>
 
   <body onLoad="">
-    <h1><div id="answer"> </div></h1>
+    <h1><div id="answer">нарисуйте символ</div></h1>
     <input type="checkbox" id="debug" onclick="startup()" />
     <label for="debug">Расширенное отображение (требуется перезагрузка)</label>
     <div style="display: flex; align-items: center">
@@ -37,26 +37,25 @@
       <br />
       Обучить символу:<input id="add" />
       <br />
-      <div class="debug">
-      Символов в базе:<input id="vsego" autocomplete="off" placeholder="0" value="0" />
-      </div>
-      <button onclick="newwrite()">Записать</button>
+      <div class="debug">Символов в базе:<input id="vsego" autocomplete="off" placeholder="0" value="0" /></div>
+      <button onclick="newwrite()">Записать</button><br />
+      <button onclick="exporta()" style="display: none" id="exp">Экспорт</button> <button onclick="importa(myfile)">Импорт</button>
     </div>
     <div class="debug">
-    <div id="aprior"></div></div>
-
+      <div id="aprior"></div>
+    </div>
   </body>
   <script>
     function startup() {
       if (!document.getElementById("debug").checked) {
-        let elems = document.getElementsByClassName('debug')
-        console.log(elems)
-         for(elem of elems){
-          elem.style.display='none'
+        let elems = document.getElementsByClassName("debug");
+        console.log(elems);
+        for (elem of elems) {
+          elem.style.display = "none";
         }
       }
     }
-    setTimeout(startup(), 1000)
+    setTimeout(startup(), 1000);
     let canv2simvol = [];
 
     let canvas1 = document.getElementById("canv1");
@@ -124,6 +123,8 @@
       }
       add.value = "";
       apriorrefresh();
+      document.getElementById("exp").style.display='block'
+
     }
     function apriorrefresh() {
       let obsh = [];
@@ -293,5 +294,98 @@
         }
       });
     };
+    function exporta() {
+      let j = 0;
+      let mysavedtext = "";
+      let exparray = [];
+      for (let i = 0; i <= simvols.length - 1; i++) {
+        exparray[j] = simvols[i];
+        j = j + 1;
+      }
+      exparray[j] = "ending1";
+      j = j + 1;
+
+      let i = 0;
+      let mysavedtext2 = "";
+      let exparray2 = [];
+      for (let i = 0; i <= stat.length - 1; i++) {
+        exparray[j] = stat[i];
+        j = j + 1;
+      }
+      exparray[j] = "ending2";
+      j = j + 1;
+      for (let i = 0; i <= simvoldata.length - 1; i++) {
+        exparray[j] = simvoldata[i];
+        j = j + 1;
+      }
+      for (let i = 0; i <= exparray.length - 1; i++) {
+        mysavedtext = mysavedtext + exparray[i] + ";" + mysavedtext2;
+      }
+
+      j = j + 1;
+
+      document.write('<a href="data:text/plain;charset=utf-8,%EF%BB%BF' + encodeURIComponent(mysavedtext) + '" download="array.txt">array.txt</a>');
+    }
+    function myfile(contents) {
+      // simvols = []
+      // simvoldata = []
+
+      let j = 1;
+      let k = 1;
+      let myarr = contents.split(";");
+      for (let i = 1; i <= myarr.length - 1; i++) {
+        simvols[j] = myarr[i];
+        j = j + 1;
+        if (myarr[i + 1] == "ending1") {
+          i = myarr.length;
+        }
+      }
+      for (let i = j + 2; i <= myarr.length - 1; i++) {
+        stat[k] = 1 * myarr[i];
+        vsegoz = vsegoz + 1 * myarr[i];
+        k = k + 1;
+        if (myarr[i + 1] == "ending2") {
+          i = myarr.length;
+        }
+      }
+      k = k + j + 1;
+      j = 0;
+      for (let i = k + 1; i <= myarr.length - 1; i++) {
+        simvoldata[j] = 1 * myarr[i];
+        j = j + 1;
+      }
+      vsego.value = simvols.length - 1;
+      apriorrefresh();
+    }
+
+    function importa(func) {
+      
+      readFile = function (e) {
+        let file = e.target.files[0];
+        if (!file) {
+          return;
+        }
+        let reader = new FileReader();
+        reader.onload = function (e) {
+          let contents = e.target.result;
+          fileInput.func(contents);
+          document.body.removeChild(fileInput);
+        };
+        reader.readAsText(file);
+      };
+      fileInput = document.createElement("input");
+      fileInput.type = "file";
+      fileInput.style.display = "none";
+      fileInput.onchange = readFile;
+      fileInput.func = func;
+      document.body.appendChild(fileInput);
+      clickel(fileInput);
+    }
+
+    function clickel(elem) {
+      let eventMouse = document.createEvent("MouseEvents");
+      eventMouse.initMouseEvent("click", true, false, window, 0, 0, 0, 0, 0, false, false, false, false, 0, null);
+      elem.dispatchEvent(eventMouse);
+    }
   </script>
 </html>
