@@ -16,9 +16,13 @@
         <br>
         <div id="canv2data"></div>
         <br>
+        <input id="add">
+        <br>
         <button
-            onclick="wipeCanvas(document.getElementById('canv1'));wipeCanvas(document.getElementById('canv2'))">стереть</button>
-        <button onclick="recognizeCanvas()">Распознать</button>
+            onclick="wipeCanvas(document.getElementById('canv1'));wipeCanvas(document.getElementById('canv2'))">Стереть</button>
+        <!-- <button onclick="recognizeCanvas()">Распознать</button> -->
+        <button onclick="recognizeCanvas()">Записать</button>
+
 
     </div>
     <script lang="Javascript"></script>
@@ -74,10 +78,6 @@
             else { canv2data.innerHTML = stroka }
         }
 
-        maxx = 0;
-        maxy = 0;
-        minx = 555;
-        miny = 555;
     }
 
     function rewriteCoords(x, y) {
