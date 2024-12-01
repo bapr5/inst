@@ -1,40 +1,35 @@
 <!DOCTYPE html>
 <html lang="en">
-
-<head>
+  <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>распознавалочка :3</title>
-</head>
+  </head>
 
-<body>
+  <body>
     <div style="display: flex; align-items: center">
-        <canvas id="canv1" width="555" height="555" style="border: 1px double black">Обновите браузер</canvas>
-        <canvas id="canv2" width="10" height="10" style=" border: 1px double black">Обновите браузер</canvas>
+      <canvas id="canv1" width="555" height="555" style="border: 1px double black">Обновите браузер</canvas>
+      <canvas id="canv2" width="10" height="10" style="border: 1px double black">Обновите браузер</canvas>
     </div>
     <div>
-        <br>
-        <div id="canv2data"></div>
-        <br>
-        <input id="add">
-        <br>
-        <button
-            onclick="wipeCanvas(document.getElementById('canv1'));wipeCanvas(document.getElementById('canv2'))">Стереть</button>
-        <!-- <button onclick="recognizeCanvas()">Распознать</button> -->
-        <button onclick="recognizeCanvas()">Записать</button>
-
-
+      <br />
+      <div id="canv2data"></div>
+      <br />
+      <input id="add" />
+      <br />
+      <button onclick="wipeCanvas(document.getElementById('canv1'));wipeCanvas(document.getElementById('canv2'))">Стереть</button>
+      <!-- <button onclick="recognizeCanvas()">Распознать</button> -->
+      <button onclick="recognizeCanvas()">Записать</button>
     </div>
     <script lang="Javascript"></script>
-</body>
-<script>
+  </body>
+  <script>
     let canv2simvol = [];
 
-
-    let canvas1 = document.getElementById('canv1');
-    let canvas2 = document.getElementById('canv2');
-    let context1 = canvas1.getContext('2d');
-    let context2 = canvas2.getContext('2d');
+    let canvas1 = document.getElementById("canv1");
+    let canvas2 = document.getElementById("canv2");
+    let context1 = canvas1.getContext("2d");
+    let context2 = canvas2.getContext("2d");
     let x;
     let y;
     var maxx = 0;
@@ -44,118 +39,121 @@
     var miny = 555;
 
     function wipeCanvas(canvas) {
-        if (canvas && canvas.getContext) {
-            const ctx = canvas.getContext("2d");
-            ctx.clearRect(0, 0, canvas.width, canvas.height);
-        } else {
-            console.error("ты куда канвас дел. шизик.");
-        }
+      canv2data.innerHTML = "";
+      if (canvas && canvas.getContext) {
+        const ctx = canvas.getContext("2d");
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+      } else {
+        console.error("ты куда канвас дел. шизик.");
+      }
     }
 
-
-
     function perenos() {
+      canv2data.innerHTML = "";
+      canvas2 = document.getElementById("canv2");
+      wipeCanvas(canvas2);
+      context2 = canvas2.getContext("2d");
+      context2.lineWidth = 1;
+      context2.drawImage(canvas1, minx, miny, maxx - minx, maxy - miny, 0, 0, 10, 10);
 
-        canv2data.innerHTML = "";
-        canvas2 = document.getElementById("canv2");
-        wipeCanvas(canvas2)
-        context2 = canvas2.getContext("2d");
-        context2.lineWidth = 1;
-        context2.drawImage(canvas1, minx, miny, maxx - minx, maxy - miny, 0, 0, 10, 10);
+      let k = 0;
+      let stroka;
 
-        let k = 0;
-        let stroka;
-
-
-        for (let j = 0; j <= 9; j++) {
-            stroka = "";
-            for (let i = 0; i <= 9; i++) {
-                if (context2.getImageData(i, j, 1, 1).data[3] > 0) { stroka = stroka + "1"; canv2simvol[k] = 1; }
-                else { stroka = stroka + "0"; canv2simvol[k] = 0; }
-                k = k + 1;
-            }
-            if (canv2data.innerHTML != "") { canv2data.innerHTML = canv2data.innerHTML + stroka }
-            else { canv2data.innerHTML = stroka }
+      for (let j = 0; j <= 9; j++) {
+        stroka = "";
+        for (let i = 0; i <= 9; i++) {
+          if (context2.getImageData(i, j, 1, 1).data[3] > 0) {
+            stroka = stroka + "1";
+            canv2simvol[k] = 1;
+          } else {
+            stroka = stroka + "0";
+            canv2simvol[k] = 0;
+          }
+          k = k + 1;
         }
-
+        if (canv2data.innerHTML != "") {
+          canv2data.innerHTML = canv2data.innerHTML + stroka;
+        } else {
+          canv2data.innerHTML = stroka;
+        }
+      }
     }
 
     function rewriteCoords(x, y) {
-        if (minx > x) {
-            minx = x;
-        }
-        if (maxx < x) {
-            maxx = x;
-        }
-        if (miny > y) {
-            miny = y;
-        }
-        if (maxy < y) {
-            maxy = y;
-        }
+      if (minx > x) {
+        minx = x;
+      }
+      if (maxx < x) {
+        maxx = x;
+      }
+      if (miny > y) {
+        miny = y;
+      }
+      if (maxy < y) {
+        maxy = y;
+      }
     }
 
     function recognizeCanvas() {
-        perenos();
+      perenos();
     }
 
     window.onload = function () {
-        canvas1 = document.getElementById("canv1");
-        context1 = canvas1.getContext("2d");
-        context1.lineWidth = 33;
-        let mouse = { x: 0, y: 0 };
-        let draw = false;
+      canvas1 = document.getElementById("canv1");
+      context1 = canvas1.getContext("2d");
+      context1.lineWidth = 33;
+      let mouse = { x: 0, y: 0 };
+      let draw = false;
 
-        canvas1.addEventListener("mousedown", function (ev) {
-            x = ev.offsetX;
-            y = ev.offsetY;
-            rewriteCoords(x, y);
+      canvas1.addEventListener("mousedown", function (ev) {
+        x = ev.offsetX;
+        y = ev.offsetY;
+        rewriteCoords(x, y);
 
-            draw = true;
-            context1.beginPath();
-            context1.moveTo(x, y);
-        });
+        draw = true;
+        context1.beginPath();
+        context1.moveTo(x, y);
+      });
 
-        canvas1.addEventListener("mousemove", function (ev) {
-            if (draw == true) {
-                x = ev.offsetX;
-                y = ev.offsetY;
-                rewriteCoords(x, y);
+      canvas1.addEventListener("mousemove", function (ev) {
+        if (draw == true) {
+          x = ev.offsetX;
+          y = ev.offsetY;
+          rewriteCoords(x, y);
 
-                context1.lineTo(x, y);
-                context1.stroke();
-                // recognizeCanvas();
-            }
-        });
+          context1.lineTo(x, y);
+          context1.stroke();
+          // recognizeCanvas();
+        }
+      });
 
-        canvas1.addEventListener("mouseup", function (ev) {
-            if (draw == true) {
-                x = ev.offsetX;
-                y = ev.offsetY;
-                rewriteCoords(x, y);
+      canvas1.addEventListener("mouseup", function (ev) {
+        if (draw == true) {
+          x = ev.offsetX;
+          y = ev.offsetY;
+          rewriteCoords(x, y);
 
-                context1.lineTo(x, y);
-                context1.stroke();
-                context1.closePath();
-                draw = false;
-                recognizeCanvas();
-            }
-        });
+          context1.lineTo(x, y);
+          context1.stroke();
+          context1.closePath();
+          draw = false;
+          recognizeCanvas();
+        }
+      });
 
-        canvas1.addEventListener("mouseout", function (ev) {
-            if (draw == true) {
-                x = ev.offsetX;
-                y = ev.offsetY;
-                rewriteCoords(x, y);
+      canvas1.addEventListener("mouseout", function (ev) {
+        if (draw == true) {
+          x = ev.offsetX;
+          y = ev.offsetY;
+          rewriteCoords(x, y);
 
-                context1.lineTo(x, y);
-                context1.stroke();
-                context1.closePath();
-                draw = false;
-                recognizeCanvas();
-            }
-        });
+          context1.lineTo(x, y);
+          context1.stroke();
+          context1.closePath();
+          draw = false;
+          recognizeCanvas();
+        }
+      });
     };
-</script>
-
+  </script>
 </html>
