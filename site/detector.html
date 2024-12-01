@@ -6,24 +6,57 @@
     <title>распознавалочка :3</title>
   </head>
 
-  <body>
+  <body onLoad="">
+    <h1><div id="answer"> </div></h1>
+    <input type="checkbox" id="debug" onclick="startup()" />
+    <label for="debug">Расширенное отображение (требуется перезагрузка)</label>
     <div style="display: flex; align-items: center">
       <canvas id="canv1" width="555" height="555" style="border: 1px double black">Обновите браузер</canvas>
-      <canvas id="canv2" width="10" height="10" style="border: 1px double black">Обновите браузер</canvas>
+      <div class="debug">
+        <canvas id="canv2" width="10" height="10" style="border: 1px double black">Обновите браузер</canvas>
+      </div>
     </div>
     <div>
       <br />
-      <div id="canv2data"></div>
-      <br />
-      <input id="add" />
-      <br />
-      <button onclick="wipeCanvas(document.getElementById('canv1'));wipeCanvas(document.getElementById('canv2'))">Стереть</button>
+      <div class="debug">
+        <div id="canv2data"></div>
+      </div>
+
+      <button
+        onclick="wipeCanvas(document.getElementById('canv1'));wipeCanvas(document.getElementById('canv2'));
+      maxx = 0;
+      maxy = 0;
+      minx = 555;
+      miny = 555;
+      answer.innerHTML='';"
+      >
+        Стереть
+      </button>
       <!-- <button onclick="recognizeCanvas()">Распознать</button> -->
-      <button onclick="recognizeCanvas()">Записать</button>
+
+      <br />
+      Обучить символу:<input id="add" />
+      <br />
+      <div class="debug">
+      Символов в базе:<input id="vsego" autocomplete="off" placeholder="0" value="0" />
+      </div>
+      <button onclick="newwrite()">Записать</button>
     </div>
-    <script lang="Javascript"></script>
+    <div class="debug">
+    <div id="aprior"></div></div>
+
   </body>
   <script>
+    function startup() {
+      if (!document.getElementById("debug").checked) {
+        let elems = document.getElementsByClassName('debug')
+        console.log(elems)
+         for(elem of elems){
+          elem.style.display='none'
+        }
+      }
+    }
+    setTimeout(startup(), 1000)
     let canv2simvol = [];
 
     let canvas1 = document.getElementById("canv1");
@@ -38,6 +71,14 @@
     var minx = 555;
     var miny = 555;
 
+    let vsegoz = 0;
+    let simvols = [];
+    let stat = [];
+    let simvoldata = [];
+    let aposterior = [];
+    let result1 = [];
+    let result2 = 0;
+
     function wipeCanvas(canvas) {
       canv2data.innerHTML = "";
       if (canvas && canvas.getContext) {
@@ -48,6 +89,65 @@
       }
     }
 
+    function newwrite() {
+      let sovpadenie = 0;
+      let j;
+
+      if (!document.getElementById("add").value) {
+        alert("Введите символ! пожалуйста.");
+        return;
+      }
+      perenos();
+      for (let i = 1; i <= simvols.length - 1; i++) {
+        if (add.value == simvols[i]) {
+          sovpadenie = i;
+        }
+      }
+      if (sovpadenie == 0) {
+        j = 0;
+        vsego.value = 1 * vsego.value + 1;
+        simvols[vsego.value] = add.value;
+        stat[vsego.value] = 3;
+        vsegoz = vsegoz + 3;
+        for (i = vsego.value * 100 - 100; i <= vsego.value * 100 - 1; i++) {
+          simvoldata[i] = 1 + 1 * canv2data.innerHTML[j];
+          j = j + 1;
+        }
+      } else {
+        stat[sovpadenie] = stat[sovpadenie] + 1;
+        vsegoz = vsegoz + 1;
+        j = 0;
+        for (i = sovpadenie * 100 - 100; i < sovpadenie * 100; i++) {
+          simvoldata[i] = simvoldata[i] + 1 * canv2data.innerHTML[j];
+          j = j + 1;
+        }
+      }
+      add.value = "";
+      apriorrefresh();
+    }
+    function apriorrefresh() {
+      let obsh = [];
+      aprior.innerHTML = "";
+      for (let i = 1; i <= simvols.length - 1; i++) {
+        aprior.innerHTML = aprior.innerHTML + "<br>" + i + " : " + simvols[i] + "  (" + stat[i] + ") = ";
+        for (let j = i * 100 - 100; j <= i * 100 - 1; j++) {
+          aprior.innerHTML = aprior.innerHTML + simvoldata[j];
+        }
+        if (aposterior[i] != undefined) {
+          aprior.innerHTML = aprior.innerHTML + " (" + aposterior[i].toFixed(4) + ")";
+        }
+      }
+      aprior.innerHTML = aprior.innerHTML + "<br>Всего(" + vsegoz + ") = ";
+      for (let i = 0; i <= 99; i++) {
+        obsh[i] = 0;
+        j = i;
+        while (j <= simvoldata.length - 1) {
+          obsh[i] = obsh[i] + simvoldata[j];
+          j = j + 100;
+        }
+        aprior.innerHTML = aprior.innerHTML + obsh[i];
+      }
+    }
     function perenos() {
       canv2data.innerHTML = "";
       canvas2 = document.getElementById("canv2");
@@ -96,6 +196,43 @@
 
     function recognizeCanvas() {
       perenos();
+      let aprior = [];
+      let rsum = [];
+      let maxaposterior = 0;
+      let maxaposteriori = 0;
+      for (let i = 1; i <= simvols.length - 1; i++) {
+        aprior[i] = stat[i] / vsegoz;
+      }
+      for (let i = 0; i <= 99; i++) {
+        rsum[i] = 0;
+        for (let j = 1; j <= simvols.length - 1; j++) {
+          rsum[i] = rsum[i] + simvoldata[j * 100 - 100 + i];
+        }
+      }
+      for (let i = 1; i <= simvols.length - 1; i++) {
+        result1[i] = 1;
+        for (let k = 0; k <= 99; k++) {
+          result1[i] = result1[i] * Math.pow(simvoldata[i * 100 + k - 100] / rsum[k], canv2simvol[k]) * Math.pow((stat[i] - simvoldata[i * 100 + k - 100]) / stat[i], Math.pow(canv2simvol[k] - 1, 2));
+        }
+      }
+      result2 = 0;
+      for (let i = 1; i <= simvols.length - 1; i++) {
+        result2 = result2 + result1[i] * aprior[i];
+      }
+      for (let i = 1; i <= simvols.length - 1; i++) {
+        aposterior[i] = (aprior[i] * result1[i]) / result2;
+      }
+      for (let i = 1; i <= simvols.length - 1; i++) {
+        if (aposterior[i] > maxaposterior) {
+          maxaposterior = aposterior[i];
+          maxaposteriori = i;
+        }
+      }
+      if (vsego.value != "0") {
+        answer.innerHTML = simvols[maxaposteriori] + " (" + (100 * maxaposterior).toFixed(2) + "%)";
+        add.value = simvols[maxaposteriori] ? simvols[maxaposteriori] : "";
+      }
+      apriorrefresh();
     }
 
     window.onload = function () {
@@ -113,6 +250,7 @@
         draw = true;
         context1.beginPath();
         context1.moveTo(x, y);
+        recognizeCanvas();
       });
 
       canvas1.addEventListener("mousemove", function (ev) {
@@ -123,7 +261,7 @@
 
           context1.lineTo(x, y);
           context1.stroke();
-          // recognizeCanvas();
+          recognizeCanvas();
         }
       });
 
