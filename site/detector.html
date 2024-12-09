@@ -11,7 +11,7 @@
     <input type="checkbox" id="debug" onclick="startup()" />
     <label for="debug">Расширенное отображение (требуется перезагрузка)</label>
     <div style="display: flex; align-items: center">
-      <canvas id="canv1" width="555" height="555" style="border: 1px double black">Обновите браузер</canvas>
+      <canvas id="canv1" width="1250" height="555" style="border: 1px double black">Обновите браузер</canvas>
       <div class="debug">
         <canvas id="canv2" width="10" height="10" style="border: 1px double black">Обновите браузер</canvas>
       </div>
@@ -46,6 +46,10 @@
     </div>
   </body>
   <script>
+    let raznx=0;
+let pred="";
+let slovo="";
+
     function startup() {
       if (!document.getElementById("debug").checked) {
         let elems = document.getElementsByClassName("debug");
@@ -67,7 +71,7 @@
     var maxx = 0;
     var maxy = 0;
 
-    var minx = 555;
+    var minx = 1250;
     var miny = 555;
 
     let vsegoz = 0;
@@ -123,8 +127,7 @@
       }
       add.value = "";
       apriorrefresh();
-      document.getElementById("exp").style.display='block'
-
+      document.getElementById("exp").style.display = "block";
     }
     function apriorrefresh() {
       let obsh = [];
@@ -359,7 +362,6 @@
     }
 
     function importa(func) {
-      
       readFile = function (e) {
         let file = e.target.files[0];
         if (!file) {
