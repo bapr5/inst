@@ -37,18 +37,24 @@
       <br />
       Обучить символу:<input id="add" />
       <br />
-      <div class="debug">Символов в базе:<input id="vsego" autocomplete="off" placeholder="0" value="0" /></div>
+      <div class="debug">
+        
+
+Расстояние для нового символа: 50<input  id="range" type="range" min="50" max="150" step="1" value="50"> 150
+        <br>Символов в базе:<input id="vsego" autocomplete="off" placeholder="0" value="0" /></div>
       <button onclick="newwrite()">Записать</button><br />
       <button onclick="exporta()" style="display: none" id="exp">Экспорт</button> <button onclick="importa(myfile)">Импорт</button>
     </div>
     <div class="debug">
+      <div id="diveval"></div>
       <div id="aprior"></div>
     </div>
   </body>
   <script>
-    let raznx=0;
-let pred="";
-let slovo="";
+    let raznx = 0;
+    let pred = "";
+    let slovo = "";
+    let draw = false;
 
     function startup() {
       if (!document.getElementById("debug").checked) {
@@ -126,7 +132,18 @@ let slovo="";
         }
       }
       add.value = "";
-      apriorrefresh();
+      if (draw == false && slovo != "") {
+        answer.innerHTML = slovo + add.value;
+        try {
+          diveval.innerHTML = eval(answer.innerHTML);
+        } catch (err) {
+          diveval.innerHTML = answer.innerHTML;
+        }
+        answer.innerHTML = diveval.innerHTML;
+      } else {
+        apriorrefresh();
+      }
+
       document.getElementById("exp").style.display = "block";
     }
     function apriorrefresh() {
@@ -236,7 +253,17 @@ let slovo="";
         answer.innerHTML = simvols[maxaposteriori] + " (" + (100 * maxaposterior).toFixed(2) + "%)";
         add.value = simvols[maxaposteriori] ? simvols[maxaposteriori] : "";
       }
-      apriorrefresh();
+      if (draw == false && slovo != "") {
+        answer.innerHTML = slovo + add.value;
+        try {
+          diveval.innerHTML = eval(answer.innerHTML);
+        } catch (err) {
+          diveval.innerHTML = answer.innerHTML;
+        }
+        answer.innerHTML = diveval.innerHTML;
+      } else {
+        apriorrefresh();
+      }
     }
 
     window.onload = function () {
@@ -244,11 +271,25 @@ let slovo="";
       context1 = canvas1.getContext("2d");
       context1.lineWidth = 33;
       let mouse = { x: 0, y: 0 };
-      let draw = false;
+      draw = false;
 
       canvas1.addEventListener("mousedown", function (ev) {
         x = ev.offsetX;
         y = ev.offsetY;
+        if (maxx != 0) {
+          raznx = x - maxx;
+        }
+        if (raznx > 100) {
+          canvas2.width = 10;
+          context2.lineWidth = 1;
+          canv2data.innerHTML = "";
+          minx = 1250;
+          miny = 555;
+          maxx = 0;
+          maxy = 0;
+          pred = add.value;
+          slovo = slovo + pred;
+        }
         rewriteCoords(x, y);
 
         draw = true;
@@ -258,9 +299,20 @@ let slovo="";
       });
 
       canvas1.addEventListener("mousemove", function (ev) {
+        x = ev.offsetX;
+        y = ev.offsetY;
+
+        if (maxx != 0) {
+          raznx = x - maxx;
+        }
+        if (raznx > document.getElementById("range").value) {
+          console.log("fasf");
+          canv1.style = "border:2px double red";
+        } else {
+          canv1.style = "border:1px double black";
+        }
+
         if (draw == true) {
-          x = ev.offsetX;
-          y = ev.offsetY;
           rewriteCoords(x, y);
 
           context1.lineTo(x, y);
@@ -358,7 +410,17 @@ let slovo="";
         j = j + 1;
       }
       vsego.value = simvols.length - 1;
-      apriorrefresh();
+      if (draw == false && slovo != "") {
+        answer.innerHTML = slovo + add.value;
+        try {
+          diveval.innerHTML = eval(answer.innerHTML);
+        } catch (err) {
+          diveval.innerHTML = answer.innerHTML;
+        }
+        answer.innerHTML = diveval.innerHTML;
+      } else {
+        apriorrefresh();
+      }
     }
 
     function importa(func) {
