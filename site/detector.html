@@ -10,6 +10,13 @@
     <h1><div id="answer">нарисуйте символ</div></h1>
     <input type="checkbox" id="debug" onclick="startup()" />
     <label for="debug">Расширенное отображение (требуется перезагрузка)</label>
+    <hr />
+    <input placeholder="Какой символ нарисовать" id="simvtodraw" onclick="" /> Коэффициент: <input placeholder="Какой символ нарисовать" id="koef" onclick="" />
+    <button onclick="DrawSimvT()">Нарисовать</button>
+    <button onclick="DrawSimvRandT()">Нарисовать случайно</button>
+
+    <hr />
+
     <div style="display: flex; align-items: center">
       <canvas id="canv1" width="1250" height="555" style="border: 1px double black">Обновите браузер</canvas>
       <div class="debug">
@@ -28,7 +35,8 @@
       maxy = 0;
       minx = 555;
       miny = 555;
-      answer.innerHTML='';"
+      answer.innerHTML='';      smeshx = -100;
+      "
       >
         Стереть
       </button>
@@ -37,11 +45,7 @@
       <br />
       Обучить символу:<input id="add" />
       <br />
-      <div class="debug">
-        
-
-Расстояние для нового символа: 50<input  id="range" type="range" min="50" max="150" step="1" value="50"> 150
-        <br>Символов в базе:<input id="vsego" autocomplete="off" placeholder="0" value="0" /></div>
+      <div class="debug">Расстояние для нового символа: 50<input id="range" type="range" min="50" max="150" step="1" value="50" /> 150 <br />Символов в базе:<input id="vsego" autocomplete="off" placeholder="0" value="0" /></div>
       <button onclick="newwrite()">Записать</button><br />
       <button onclick="exporta()" style="display: none" id="exp">Экспорт</button> <button onclick="importa(myfile)">Импорт</button>
     </div>
@@ -51,10 +55,166 @@
     </div>
   </body>
   <script>
+    let stopp = 0;
+    let smeshx = -100;
+
     let raznx = 0;
     let pred = "";
     let slovo = "";
     let draw = false;
+    function DrawSimvT() {
+      let z = 0;
+      let myspeed;
+      stopp = 0;
+      for (let i = 1; i <= simvols.length - 1; i++) {
+        if (simvtodraw.value == simvols[i]) {
+          z = i;
+        }
+      }
+      if (z > 0) {
+        smeshx = smeshx + 105;
+        koef.value = stat[z] - 2;
+        speed = Math.floor(1000 * Math.pow(stat[z], -0.8));
+        timerId = setInterval(() => DrawSimv(z), speed);
+      } else {
+        alert("Символ " + simvtodraw.value + " не найден в базе!");
+      }
+    }
+    function DrawSimvRandT() {
+      let z = 0;
+      stopp = 0;
+      repeatr = 0;
+      for (let i = 1; i <= simvols.length - 1; i++) {
+        if (simvtodraw.value == simvols[i]) {
+          z = i;
+        }
+      }
+      if (z > 0) {
+        smeshx = smeshx + 105;
+        koef.value = Math.floor(stat[z] * 0.2);
+        timerId = setInterval(() => DrawSimvRand(), 100);
+      } else {
+        alert("Символ " + simvtodraw.value + " не найден в базе!");
+      }
+    }
+    function DrawSimvRand() {
+      let z = 0;
+      let randval = 0;
+
+      if (stopp != 1) {
+        canvas2 = document.getElementById("canv2");
+        context2 = canvas2.getContext("2d");
+        canvas2.width = 10;
+        canvas2.height = 10;
+        context2.lineWidth = 1;
+        for (let i = 1; i <= simvols.length - 1; i++) {
+          if (simvtodraw.value == simvols[i]) {
+            z = i;
+          }
+        }
+        if (z > 0) {
+          for (let j = 0; j <= 9; j++) {
+            for (let i = 0; i <= 9; i++) {
+              randval = Math.floor(Math.random() * 100);
+              if (randval <= Math.floor((100 * (simvoldata[z * 100 - 100 + j * 10 + i] - 1 - parseInt(koef.value))) / (stat[z] - 2 - parseInt(koef.value)))) {
+                canv2simvol[j * 10 + i] = 1;
+                context2.beginPath();
+                context2.fillRect(i, j, 1, 1);
+                context2.closePath();
+                context2.fill();
+              } else {
+                canv2simvol[j * 10 + i] = 0;
+              }
+            }
+          }
+          canvas1 = document.getElementById("canv1");
+          context1 = canvas1.getContext("2d");
+          context1.imageSmoothingEnabled = false;
+          context1.drawImage(canvas2, 0, 0, 10, 10, smeshx, 5, 100, 100);
+        } else {
+          alert("Такого символа не найдено");
+        }
+        let aprior = [];
+        let rsum = [];
+        let maxaposterior = 0;
+        let maxaposteriori = 0;
+        for (let i = 1; i <= simvols.length - 1; i++) {
+          aprior[i] = stat[i] / vsegoz;
+        }
+        for (let i = 0; i <= 99; i++) {
+          rsum[i] = 0;
+          for (let j = 1; j <= simvols.length - 1; j++) {
+            rsum[i] = rsum[i] + simvoldata[j * 100 - 100 + i];
+          }
+        }
+        for (let i = 1; i <= simvols.length - 1; i++) {
+          result1[i] = 1;
+          for (let k = 0; k <= 99; k++) {
+            result1[i] = result1[i] * Math.pow(simvoldata[i * 100 + k - 100] / rsum[k], canv2simvol[k]) * Math.pow((stat[i] - simvoldata[i * 100 + k - 100]) / stat[i], Math.pow(canv2simvol[k] - 1, 2));
+          }
+        }
+        result2 = 0;
+        for (let i = 1; i <= simvols.length - 1; i++) {
+          result2 = result2 + result1[i] * aprior[i];
+        }
+        for (let i = 1; i <= simvols.length - 1; i++) {
+          aposterior[i] = (aprior[i] * result1[i]) / result2;
+        }
+        for (let i = 1; i <= simvols.length - 1; i++) {
+          if (aposterior[i] > maxaposterior) {
+            maxaposterior = aposterior[i];
+            maxaposteriori = i;
+          }
+        }
+        add.value = simvols[maxaposteriori];
+        apriorrefresh();
+      }
+      if (aposterior[z] >= 0.99999 && repeatr != 4) {
+        repeatr = repeatr + 1;
+      }
+      if (aposterior[z] >= 0.99999 && repeatr == 4) {
+        setTimeout(() => {
+          clearInterval(timerId);
+        }, 0);
+        stopp = 1;
+      }
+    }
+    function DrawSimv(z) {
+      if (stopp != 1) {
+        canvas2 = document.getElementById("canv2");
+        context2 = canvas2.getContext("2d");
+        canvas2.width = 10;
+        canvas2.height = 10;
+        context2.lineWidth = 1;
+        for (let j = 0; j <= 9; j++) {
+          for (let i = 0; i <= 9; i++) {
+            if (simvoldata[z * 100 - 100 + j * 10 + i] >= parseInt(koef.value)) {
+              context2.beginPath();
+              context2.fillRect(i, j, 1, 1);
+              context2.closePath();
+              context2.fill();
+            }
+          }
+        }
+        canvas1 = document.getElementById("canv1");
+        context1 = canvas1.getContext("2d");
+        context1.imageSmoothingEnabled = false;
+        let smeshy = Math.floor(smeshx / (150 * 7.5)) * 150
+
+
+        context1.drawImage(canvas2, 0, 0, 10, 10, smeshx%(150*7.5), smeshy, 100, 100);
+      }
+      koef.value = parseInt(koef.value) - 1 + stopp;
+      if (koef.value == 2) {
+        stopp = 2;
+      }
+      if (koef.value == Math.floor(stat[z] / 2) && stopp == 2) {
+        setTimeout(() => {
+          clearInterval(timerId);
+        }, 0);
+        stopp = 1;
+      }
+    }
 
     function startup() {
       if (!document.getElementById("debug").checked) {
@@ -314,7 +474,6 @@
 
         if (draw == true) {
           rewriteCoords(x, y);
-
           context1.lineTo(x, y);
           context1.stroke();
           recognizeCanvas();
